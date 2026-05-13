@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>CNC Furniture Maker Pro</title>
+<style>
+  body{font-family:Arial,sans-serif;font-size:13px;margin:10px;color:#222}
+  h2{margin:6px 0}
+  fieldset{margin-bottom:10px;border:1px solid #bbb;padding:8px}
+  legend{font-weight:bold}
+  label{display:inline-block;width:170px}
+  input[type=number], select{width:110px}
+  .row{margin:4px 0}
+  button{padding:6px 12px;margin-right:6px;cursor:pointer;background:#0056b3;color:white;border:none;border-radius:4px}
+  button:hover{background:#004494}
+  .btn-danger{background:#dc3545}
+  .btn-danger:hover{background:#c82333}
+  .btn-secondary{background:#6c757d}
+  .btn-secondary:hover{background:#5a6268}
+  #cutlist{margin-top:10px;max-height:260px;overflow:auto;border:1px solid #ccc;padding:6px}
+  table{font-size:12px;width:100%;text-align:left;border-collapse:collapse}
+  th,td{padding:4px 6px;border:1px solid #ddd}
+  .hidden {display: none;}
+</style>
+</head>
+<body>
+<h2>CNC Furniture Maker Pro</h2>
+
+<fieldset><legend>Loại sản phẩm</legend>
+  <select id="type" onchange="updateUI()">
+    <option value="base_cabinet">Tủ bếp dưới</option>
+    <option value="wall_cabinet">Tủ bếp trên</option>
+    <option value="wardrobe">Tủ quần áo</option>
+    <option value="bed">Giường</option>
+    <option value="desk">Bàn học</option>
+    <option value="bedside">Táp đầu giường</option>
+  </select>
+</fieldset>
+
+<fieldset><legend>Kích thước tổng (mm)</legend>
+  <div class="row"><label>Rộng</label><input id="width" type="number" value="800"></div>
+  <div class="row"><label>Cao</label><input id="height" type="number" value="800"></div>
+  <div class="row"><label>Sâu</label><input id="depth" type="number" value="600"></div>
+</fieldset>
+
+<fieldset><legend>Vật liệu (mm)</legend>
+  <div class="row"><label>Độ dày ván</label><input id="thickness" type="number" value="17"></div>
+  <div class="row" id="row_back_thickness"><label>Độ dày hậu</label><input id="back_thickness" type="number" value="5"></div>
+  <div class="row" id="row_door_gap"><label>Khe hở cánh</label><input id="door_gap" type="number" value="3"></div>
+  <div class="row" id="row_kickboard"><label>Chân âm (kickboard)</label><input id="kickboard" type="number" value="80"></div>
+</fieldset>
+
+<fieldset id="fs_config"><legend>Cấu hình chia ngăn</legend>
+  <div class="row" id="row_compartments"><label>Số khoang</label><input id="compartments" type="number" value="1"></div>
+  <div class="row" id="row_shelves"><label>Số đợt</label><input id="shelves" type="number" value="1"></div>
+  <div class="row" id="row_doors"><label>Số cánh</label><input id="doors" type="number" value="2"></div>
+  <div class="row" id="row_drawers"><label>Số hộc kéo</label><input id="drawers" type="number" value="0"></div>
+</fieldset>
+
+<fieldset id="fs_advanced"><legend>Nâng cao</legend>
+  <div class="row" id="row_door_type">
+    <label>Kiểu cánh</label>
+    <select id="door_type">
+      <option value="overlay">Cánh phủ</option>
+      <option value="inset">Cánh lọt (âm)</option>
+      <option value="sliding">Cánh lùa</option>
+    </select>
+  </div>
+  <div class="row" id="row_kitchen_module" class="hidden">
+    <label>Module tủ bếp</label>
+    <select id="kitchen_module">
+      <option value="standard">Tiêu chuẩn</option>
+      <option value="dishwasher">Máy rửa bát</option>
+      <option value="extractor">Máy hút mùi</option>
+    </select>
+  </div>
+  <div class="row" id="row_bed_type" class="hidden">
+    <label>Loại giường</label>
+    <select id="bed_type">
+      <option value="standard">Giường thường</option>
+      <option value="floating">Giường bay</option>
+    </select>
+  </div>
+
+  <div class="row" id="row_has_back"><label>Có hậu</label><input id="has_back" type="checkbox" checked></div>
+  <div class="row" id="row_hinges"><label>Có bản lề</label><input id="hinges" type="checkbox" checked></div>
+  <div class="row"><label>Có cam chốt</label><input id="cams" type="checkbox" checked></div>
+  <div class="row"><label>Bo cạnh</label><input id="edge_banding" type="checkbox" checked></div>
+</fieldset>
+
+<div class="row">
+  <button onclick="buildIt()">Tạo model</button>
+  <button class="btn-secondary" onclick="clearForm()">Khôi phục mặc định</button>
+  <button class="btn-secondary" onclick="exportCSV()">Xuất CSV</button>
+  <button class="btn-secondary" onclick="checkUpdate()">Kiểm tra Cập nhật</button>
+  <button class="btn-danger" onclick="window.close()">Đóng</button>
+</div>
+
+<div id="cutlist"><i>Cutlist sẽ hiển thị ở đây sau khi tạo model.</i></div>
+
+<script>
+function updateUI() {
+  const t = document.getElementById('type').value;
+  const isCab = ['base_cabinet','wall_cabinet','wardrobe','bedside'].includes(t);
+  const isKit = ['base_cabinet','wall_cabinet'].includes(t);
+  const isBed = t === 'bed';
+  const isDesk = t === 'desk';
+
+  const show = (id, cond) => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = cond ? 'block' : 'none';
+  };
+
+  show('row_door_type', isCab);
+  show('row_kitchen_module', isKit);
+  show('row_bed_type', isBed);
+
+  show('row_doors', isCab && t !== 'bedside');
+  show('row_door_gap', isCab);
+  show('row_hinges', isCab);
+  
+  show('row_compartments', ['wardrobe','base_cabinet','wall_cabinet'].includes(t));
+  show('row_shelves', ['wardrobe','base_cabinet','wall_cabinet'].includes(t));
+  show('row_drawers', ['wardrobe','base_cabinet','bedside','desk'].includes(t));
+
+  show('row_back_thickness', !isBed && !isDesk);
+  show('row_has_back', !isBed && !isDesk);
+  show('row_kickboard', ['base_cabinet', 'wardrobe'].includes(t));
+
+  show('fs_config', !isBed);
+}
+
+window.onload = updateUI;
+
+function getParams(){
+  const id=v=>document.getElementById(v);
+  return {
+    type:id('type').value,
+    width:parseFloat(id('width').value||0),
+    height:parseFloat(id('height').value||0),
+    depth:parseFloat(id('depth').value||0),
+    thickness:parseFloat(id('thickness').value||17),
+    back_thickness:parseFloat(id('back_thickness').value||5),
+    door_gap:parseFloat(id('door_gap').value||3),
+    kickboard:parseFloat(id('kickboard').value||0),
+    compartments:parseInt(id('compartments').value||1),
+    shelves:parseInt(id('shelves').value||0),
+    doors:parseInt(id('doors').value||0),
+    drawers:parseInt(id('drawers').value||0),
+    door_type:id('door_type') ? id('door_type').value : 'overlay',
+    kitchen_module:id('kitchen_module') ? id('kitchen_module').value : 'standard',
+    bed_type:id('bed_type') ? id('bed_type').value : 'standard',
+    has_back:id('has_back') ? id('has_back').checked : false,
+    hinges:id('hinges') ? id('hinges').checked : false,
+    cams:id('cams') ? id('cams').checked : false,
+    edge_banding:id('edge_banding') ? id('edge_banding').checked : false
+  };
+}
+
+function buildIt(){
+  sketchup.build_furniture(JSON.stringify(getParams()));
+}
+
+function checkUpdate(){
+  sketchup.check_update("");
+}
+
+function exportCSV(){ sketchup.export_csv(""); }
+
+function clearForm(){
+  document.getElementById('width').value=800;
+  document.getElementById('height').value=800;
+  document.getElementById('depth').value=600;
+  document.getElementById('thickness').value=17;
+  document.getElementById('back_thickness').value=5;
+  document.getElementById('door_gap').value=3;
+  document.getElementById('kickboard').value=80;
+  document.getElementById('compartments').value=1;
+  document.getElementById('shelves').value=1;
+  document.getElementById('doors').value=2;
+  document.getElementById('drawers').value=0;
+  updateUI();
+  document.getElementById('cutlist').innerHTML='<i>Đã xóa.</i>';
+}
+
+function showCutlist(html){
+  document.getElementById('cutlist').innerHTML=html;
+}
+</script>
+</body>
+</html>
