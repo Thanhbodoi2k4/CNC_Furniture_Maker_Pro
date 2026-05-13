@@ -101,6 +101,17 @@
   <div class="row"><label>Bo cạnh</label><input id="edge_banding" type="checkbox" checked></div>
 </fieldset>
 
+<fieldset id="fs_bed"><legend>Cấu hình Giường</legend>
+  <div class="row"><label>Cao vai giường</label><input id="bed_side_h" type="number" value="350"></div>
+  <div class="row"><label>Số lượng ngăn kéo</label><input id="bed_drawers" type="number" value="2" onchange="updateUI()"></div>
+  <div id="bed_drawer_config">
+    <div class="row"><label>Bản Đầu (Cách đầu giường)</label><input id="bed_top_margin" type="number" value="400"></div>
+    <div class="row"><label>Bản Giữa (Đố chia NK)</label><input id="bed_mid_margin" type="number" value="100"></div>
+    <div class="row"><label>Bản Cuối (Cách đuôi giường)</label><input id="bed_bot_margin" type="number" value="200"></div>
+    <div class="row"><label>Chiều dài ray</label><input id="bed_runner" type="number" value="500"></div>
+  </div>
+</fieldset>
+
 <div class="row">
   <button onclick="buildIt()">Tạo model</button>
   <button class="btn-secondary" onclick="clearForm()">Khôi phục mặc định</button>
@@ -148,6 +159,12 @@ function updateUI() {
   show('row_kickboard', ['base_cabinet', 'wardrobe'].includes(t));
 
   show('fs_config', !isBed);
+  show('fs_bed', isBed);
+  
+  if (isBed) {
+    const hasBedDrawers = parseInt(document.getElementById('bed_drawers').value) > 0;
+    show('bed_drawer_config', hasBedDrawers);
+  }
 }
 
 window.onload = updateUI;
@@ -177,7 +194,13 @@ function getParams(){
     hinges:id('hinges') ? id('hinges').checked : false,
     cams:id('cams') ? id('cams').checked : false,
     sys32:id('sys32') ? id('sys32').checked : false,
-    edge_banding:id('edge_banding') ? id('edge_banding').checked : false
+    edge_banding:id('edge_banding') ? id('edge_banding').checked : false,
+    bed_side_h:parseFloat(id('bed_side_h') ? id('bed_side_h').value : 350),
+    bed_drawers:parseInt(id('bed_drawers') ? id('bed_drawers').value : 2),
+    bed_top_margin:parseFloat(id('bed_top_margin') ? id('bed_top_margin').value : 400),
+    bed_mid_margin:parseFloat(id('bed_mid_margin') ? id('bed_mid_margin').value : 100),
+    bed_bot_margin:parseFloat(id('bed_bot_margin') ? id('bed_bot_margin').value : 200),
+    bed_runner:parseFloat(id('bed_runner') ? id('bed_runner').value : 500)
   };
 }
 
