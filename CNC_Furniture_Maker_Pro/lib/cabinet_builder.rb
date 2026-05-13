@@ -232,74 +232,82 @@ module CNCFMP
       cl = []
       
       head_h = h
-      side_h = h * 0.45
-      
-      # Đầu giường
+      side_h = h * 0.45 # Ví dụ: nếu h=900 thì side_h=405
+      # Nếu người dùng nhập chiều cao thấp (ví dụ 400), ta lấy luôn side_h = h
+      side_h = h if h <= 500 
+
+      # Đầu giường (Phủ ra ngoài cùng)
       panel(group, 'Đầu giường', [0, 0, 0], [w, t, head_h], {thickness: t, edge: 'Trên 1mm'})
       cl << cut_entry('Đầu giường', 1, w, head_h, t, 'Trên 1mm')
-      
-      # Đuôi giường
-      panel(group, 'Đuôi giường', [0, d - t, 0], [w, t, side_h], {thickness: t, edge: 'Trên 1mm'})
-      cl << cut_entry('Đuôi giường', 1, w, side_h, t, 'Trên 1mm')
 
       if btype == 'floating'
-        # BỆ THỤT (Chân bệ giường bay lùi vào 150mm)
+        base_h = 150.0
         inset_b = 150.0
-        base_h = 150.0 # Chiều cao bệ
-        # Vai bệ (dọc)
+        # Bệ thụt
         panel(group, 'Vai bệ trái', [inset_b, inset_b, 0], [t, d - inset_b*2, base_h], {thickness: t})
         panel(group, 'Vai bệ phải', [w - inset_b - t, inset_b, 0], [t, d - inset_b*2, base_h], {thickness: t})
-        # Thang bệ (ngang)
         panel(group, 'Thang bệ trước', [inset_b + t, inset_b, 0], [w - inset_b*2 - 2*t, t, base_h], {thickness: t})
         panel(group, 'Thang bệ sau', [inset_b + t, d - inset_b - t, 0], [w - inset_b*2 - 2*t, t, base_h], {thickness: t})
         
-        cl << cut_entry('Vai bệ dọc', 2, d - inset_b*2, base_h, t, '')
-        cl << cut_entry('Thang bệ ngang', 2, w - inset_b*2 - 2*t, base_h, t, '')
+        cl << cut_entry('Vai bệ', 2, d - inset_b*2, base_h, t, '')
+        cl << cut_entry('Thang bệ', 2, w - inset_b*2 - 2*t, base_h, t, '')
 
-        # VAI GIƯỜNG CHÍNH (Bay lơ lửng, cách đất base_h)
-        panel(group, 'Vai giường trái',  [0, t, base_h], [t, d - 2*t, side_h - base_h], {thickness: t, edge: 'Trên 1mm'})
-        panel(group, 'Vai giường phải',  [w - t, t, base_h], [t, d - 2*t, side_h - base_h], {thickness: t, edge: 'Trên 1mm'})
-        cl << cut_entry('Vai giường', 2, d - 2*t, side_h - base_h, t, 'Trên 1mm')
+        # Vai giường lơ lửng
+        panel(group, 'Vai giường trái',  [0, t, base_h], [t, d - t, side_h - base_h], {thickness: t, edge: 'Trên 1mm'})
+        panel(group, 'Vai giường phải',  [w - t, t, base_h], [t, d - t, side_h - base_h], {thickness: t, edge: 'Trên 1mm'})
+        # Đuôi giường lọt trong vai
+        panel(group, 'Đuôi giường', [t, d - t, base_h], [w - 2*t, t, side_h - base_h], {thickness: t, edge: 'Trên 1mm'})
+        
+        cl << cut_entry('Vai giường', 2, d - t, side_h - base_h, t, 'Trên 1mm')
+        cl << cut_entry('Đuôi giường', 1, w - 2*t, side_h - base_h, t, 'Trên 1mm')
         
         grid_base_z = base_h
-        grid_h = side_h - base_h - t # Trừ độ dày mặt phản
+        grid_h = side_h - base_h - t
       else
         # GIƯỜNG THƯỜNG
-        panel(group, 'Vai giường trái',  [0, t, 0], [t, d - 2*t, side_h], {thickness: t, edge: 'Trên 1mm'})
-        panel(group, 'Vai giường phải',  [w - t, t, 0], [t, d - 2*t, side_h], {thickness: t, edge: 'Trên 1mm'})
-        cl << cut_entry('Vai giường', 2, d - 2*t, side_h, t, 'Trên 1mm')
+        # Vai giường phủ xuyên suốt từ đuôi tới đầu giường
+        panel(group, 'Vai giường trái',  [0, t, 0], [t, d - t, side_h], {thickness: t, edge: 'Trên 1mm'})
+        panel(group, 'Vai giường phải',  [w - t, t, 0], [t, d - t, side_h], {thickness: t, edge: 'Trên 1mm'})
+        # Đuôi giường lọt trong vai
+        panel(group, 'Đuôi giường', [t, d - t, 0], [w - 2*t, t, side_h], {thickness: t, edge: 'Trên 1mm'})
+        
+        cl << cut_entry('Vai giường', 2, d - t, side_h, t, 'Trên 1mm')
+        cl << cut_entry('Đuôi giường', 1, w - 2*t, side_h, t, 'Trên 1mm')
         
         grid_base_z = 0
         grid_h = side_h - t
       end
 
-      # KHUNG XƯƠNG ĐAN CHÉO (Egg-crate grid)
-      # Để phần mềm CNC (như ABF) tự nhận ngàm mộng âm dương, ta vẽ các thanh giao nhau (intersect).
-      num_long = 2 # 2 thang dọc
-      num_lat = 4  # 4 thang ngang
+      # KHUNG XƯƠNG: Thang dọc chạy thẳng, Thang ngang cắt đoạn
+      num_long = 2
+      num_lat = 2 # 2 hàng ngang tạo thành 3 khoang
       
-      # Thang dọc (Longitudinal supports)
       inner_w = w - 2*t
-      step_w = inner_w / (num_long + 1).to_f
-      num_long.times do |i|
-        x = t + step_w * (i + 1) - t/2.0
-        panel(group, "Thang dọc xương #{i+1}", [x, t, grid_base_z], [t, d - 2*t, grid_h], {thickness: t})
-      end
-      cl << cut_entry('Thang dọc xương', num_long, d - 2*t, grid_h, t, 'Ngàm sập')
-
-      # Thang ngang (Latitudinal supports)
       inner_d = d - 2*t
-      step_d = inner_d / (num_lat + 1).to_f
-      num_lat.times do |i|
-        y = t + step_d * (i + 1) - t/2.0
-        panel(group, "Thang ngang xương #{i+1}", [t, y, grid_base_z], [inner_w, t, grid_h], {thickness: t})
+      comp_w = (inner_w - num_long*t) / (num_long + 1).to_f
+      comp_d = (inner_d - num_lat*t) / (num_lat + 1).to_f
+      
+      # Thang dọc (nguyên tấm)
+      num_long.times do |i|
+        x = t + comp_w*(i+1) + t*i
+        panel(group, "Thang dọc xương #{i+1}", [x, t, grid_base_z], [t, inner_d, grid_h], {thickness: t})
       end
-      cl << cut_entry('Thang ngang xương', num_lat, inner_w, grid_h, t, 'Ngàm sập')
+      cl << cut_entry('Thang dọc xương', num_long, inner_d, grid_h, t, '')
 
-      # MẶT PHẢN GIƯỜNG (Chia 2 tấm dọc hoặc ngang)
-      panel(group, 'Mặt phản 1', [t, t, side_h - t], [inner_w, inner_d/2.0 - 2, t], {thickness: t})
-      panel(group, 'Mặt phản 2', [t, t + inner_d/2.0 + 2, side_h - t], [inner_w, inner_d/2.0 - 2, t], {thickness: t})
-      cl << cut_entry('Mặt phản', 2, inner_w, inner_d/2.0 - 2, t, 'Trải phủ gầm')
+      # Thang ngang (Cắt thành các đoạn nhỏ nhét giữa thang dọc)
+      num_lat.times do |row|
+        y = t + comp_d*(row+1) + t*row
+        (num_long + 1).times do |col|
+          x = t + comp_w*col + t*col
+          panel(group, "Thang ngang xương", [x, y, grid_base_z], [comp_w, t, grid_h], {thickness: t})
+        end
+      end
+      cl << cut_entry('Thang ngang xương', num_lat * (num_long + 1), comp_w, grid_h, t, '')
+
+      # MẶT PHẢN GIƯỜNG (Lọt trong vai và đuôi giường, bằng mặt vai giường)
+      panel(group, 'Mặt phản nửa trước', [t, t, side_h - t], [inner_w, inner_d/2.0, t], {thickness: t})
+      panel(group, 'Mặt phản nửa sau', [t, t + inner_d/2.0, side_h - t], [inner_w, inner_d/2.0, t], {thickness: t})
+      cl << cut_entry('Mặt phản', 2, inner_w, inner_d/2.0, t, 'Trải phủ gầm')
 
       cl
     end
