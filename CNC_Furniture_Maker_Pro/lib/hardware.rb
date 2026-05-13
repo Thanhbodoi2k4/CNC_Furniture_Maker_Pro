@@ -47,5 +47,61 @@ module CNCFMP
       inst.name = name
       inst
     end
+
+    def self.add_system_32_holes(entities, panel_origin, panel_size, options = {})
+      return unless options[:enabled]
+      t = panel_size[0] # Độ dày ván (x)
+      d = panel_size[1] # Chiều sâu ván (y)
+      h = panel_size[2] # Chiều cao ván (z)
+
+      return if d < 100 || h < 200
+
+      # System 32 rules
+      front_dist = 37.0
+      back_dist = 37.0
+      hole_spacing = 32.0
+      hole_depth = 10.0
+      hole_radius = 2.5
+
+      cdef = get_marker_def('Sys32_Hole', hole_radius, hole_depth)
+
+      # Determine start and end z
+      z_start = 100.0
+      z_end = h - 100.0
+      num_holes = ((z_end - z_start) / hole_spacing).floor
+      return if num_holes < 1
+
+      # Center the holes vertically
+      actual_span = (num_holes - 1) * hole_spacing
+      start_z = (h - actual_span) / 2.0
+
+      # Determine which face to drill
+      # If the panel is on the left side of the cabinet (origin.x == 0), drill on the right face (+x).
+      # If panel is on the right, drill on the left face (-x).
+      # We'll just pass a direction or assume it based on options.
+      dir = options[:direction] || 1 # 1 for +x, -1 for -x
+      x_pos = (dir == 1) ? t : 0
+      rot_y = (dir == 1) ? 90.degrees : -90.degrees
+
+      num_holes.times do |i|
+        z = start_z + i * hole_spacing
+        
+        # Front hole
+        y_front = front_dist
+        tr_front = Geom::Transformation.translation([panel_origin[0] + x_pos, panel_origin[1] + y_front, panel_origin[2] + z])
+        tr_rot_front = Geom::Transformation.rotation([panel_origin[0] + x_pos, panel_origin[1] + y_front, panel_origin[2] + z], Y_AXIS, rot_y)
+        inst1 = entities.add_instance(cdef, tr_front * tr_rot_front)
+        inst1.name = 'Sys32_Marker'
+
+        # Back hole
+        y_back = d - back_dist
+        if y_back > y_front + 32
+          tr_back = Geom::Transformation.translation([panel_origin[0] + x_pos, panel_origin[1] + y_back, panel_origin[2] + z])
+          tr_rot_back = Geom::Transformation.rotation([panel_origin[0] + x_pos, panel_origin[1] + y_back, panel_origin[2] + z], Y_AXIS, rot_y)
+          inst2 = entities.add_instance(cdef, tr_back * tr_rot_back)
+          inst2.name = 'Sys32_Marker'
+        end
+      end
+    end
   end
 end

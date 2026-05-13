@@ -38,15 +38,42 @@ module CNCFMP
         thickness: thickness.round(1), edge: edge, note: note }
     end
 
+    def self.build_back_panel(group, p, w, h, t, kick, cl)
+      has_back = p['has_back'] != false
+      return unless has_back
+
+      tb = (p['back_thickness']||5).to_f
+      btype = p['back_type'] || 'flush'
+      inset = (p['back_inset']||15).to_f
+      groove = (p['back_groove']||8).to_f
+
+      # d is passed from outside, need to grab it
+      d = p['depth'].to_f
+
+      if btype == 'dado'
+        # Hậu rãnh
+        b_w = w - 2*t + 2*groove
+        b_h = h - kick - 2*t + 2*groove
+        b_x = t - groove
+        b_y = d - inset - tb
+        b_z = kick + t - groove
+        panel(group, 'Hậu (Rãnh)', [b_x, b_y, b_z], [b_w, tb, b_h], {thickness: tb})
+        cl << cut_entry('Hậu', 1, b_w, b_h, tb, "Đánh rãnh #{groove}mm")
+      else
+        # Hậu áp
+        panel(group, 'Hậu (Áp)', [t, d - tb, kick + t], [w - 2*t, tb, h - kick - 2*t], {thickness: tb})
+        cl << cut_entry('Hậu', 1, w - 2*t, h - kick - 2*t, tb, '')
+      end
+    end
+
     def self.build_base_cabinet(group, p)
       w = p['width'].to_f;  h = p['height'].to_f;  d = p['depth'].to_f
       t = (p['thickness']||17).to_f
-      tb = (p['back_thickness']||5).to_f
       kick = (p['kickboard']||80).to_f
       shelves = (p['shelves']||1).to_i
       comps = (p['compartments']||1).to_i
-      has_back = p['has_back'] != false
       mod = p['kitchen_module'] || 'standard'
+      sys32 = p['sys32'] == true
       
       cl = []
       
@@ -54,6 +81,11 @@ module CNCFMP
       panel(group, 'Hồi trái',  [0, 0, kick], [t, d, h - kick], {thickness: t, edge: 'Trước 1mm'})
       panel(group, 'Hồi phải',  [w - t, 0, kick], [t, d, h - kick], {thickness: t, edge: 'Trước 1mm'})
       cl << cut_entry('Hồi trái/phải', 2, h - kick, d, t, 'Trước 1mm')
+
+      if sys32
+        Hardware.add_system_32_holes(group.entities, [0, 0, kick], [t, d, h - kick], enabled: true, direction: 1)
+        Hardware.add_system_32_holes(group.entities, [w - t, 0, kick], [t, d, h - kick], enabled: true, direction: -1)
+      end
 
       if mod == 'dishwasher'
         panel(group, 'Giằng trên trước', [t, 0, h - t], [w - 2*t, 100, t], {thickness: t})
@@ -71,18 +103,14 @@ module CNCFMP
       panel(group, 'Giằng trên sau',   [t, d - 100, h - t], [w - 2*t, 100, t], {thickness: t})
       cl << cut_entry('Giằng trên', 2, w - 2*t, 100, t, '')
 
-      # Hậu
-      if has_back
-        panel(group, 'Hậu', [t, d - tb, kick + t], [w - 2*t, tb, h - kick - 2*t], {thickness: tb})
-        cl << cut_entry('Hậu', 1, w - 2*t, h - kick - 2*t, tb, '')
-      end
+      build_back_panel(group, p, w, h, t, kick, cl)
 
-      # Kickboard
+      # Chân âm
       panel(group, 'Chân âm', [t, 50, 0], [w - 2*t, t, kick], {thickness: t})
       cl << cut_entry('Chân âm', 1, w - 2*t, kick, t, 'Trên 1mm')
 
       # Vách & Đợt
-      build_inner_compartments(group, p, w, h - kick, d, kick, t, tb, comps, shelves, cl, has_back, false)
+      build_inner_compartments(group, p, w, h - kick, d, kick, t, comps, shelves, cl, false, sys32)
       
       # Cánh
       build_doors(group, p, w, h - kick, d, kick, cl)
@@ -92,16 +120,20 @@ module CNCFMP
     def self.build_wall_cabinet(group, p)
       w = p['width'].to_f; h = p['height'].to_f; d = p['depth'].to_f
       t = (p['thickness']||17).to_f
-      tb = (p['back_thickness']||5).to_f
       shelves = (p['shelves']||1).to_i
       comps = (p['compartments']||1).to_i
-      has_back = p['has_back'] != false
       mod = p['kitchen_module'] || 'standard'
+      sys32 = p['sys32'] == true
       
       cl = []
       panel(group, 'Hồi trái',  [0, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm'})
       panel(group, 'Hồi phải',  [w - t, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm'})
       cl << cut_entry('Hồi trái/phải', 2, h, d, t, 'Trước 1mm')
+
+      if sys32
+        Hardware.add_system_32_holes(group.entities, [0, 0, 0], [t, d, h], enabled: true, direction: 1)
+        Hardware.add_system_32_holes(group.entities, [w - t, 0, 0], [t, d, h], enabled: true, direction: -1)
+      end
 
       if mod == 'extractor'
         panel(group, 'Nóc', [t, 0, h - t], [w - 2*t, d, t], {thickness: t, edge: 'Trước 1mm'})
@@ -114,12 +146,8 @@ module CNCFMP
         cl << cut_entry('Đáy/Nóc', 2, w - 2*t, d, t, 'Trước 1mm')
       end
 
-      if has_back
-        panel(group, 'Hậu', [t, d - tb, t], [w - 2*t, tb, h - 2*t], {thickness: tb})
-        cl << cut_entry('Hậu', 1, w - 2*t, h - 2*t, tb, '')
-      end
-
-      build_inner_compartments(group, p, w, h, d, 0, t, tb, comps, shelves, cl, has_back, true)
+      build_back_panel(group, p, w, h, t, 0, cl)
+      build_inner_compartments(group, p, w, h, d, 0, t, comps, shelves, cl, true, sys32)
       build_doors(group, p, w, h, d, 0, cl)
       cl
     end
@@ -127,16 +155,21 @@ module CNCFMP
     def self.build_wardrobe(group, p)
       w = p['width'].to_f; h = p['height'].to_f; d = p['depth'].to_f
       t = (p['thickness']||17).to_f
-      tb = (p['back_thickness']||5).to_f
       kick = (p['kickboard']||80).to_f
       shelves = (p['shelves']||3).to_i
       comps = (p['compartments']||2).to_i
+      sys32 = p['sys32'] == true
       cl = []
       
       panel(group, 'Hồi trái', [0, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm'})
       panel(group, 'Hồi phải', [w - t, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm'})
       cl << cut_entry('Hồi trái/phải', 2, h, d, t, 'Trước 1mm')
       
+      if sys32
+        Hardware.add_system_32_holes(group.entities, [0, 0, kick], [t, d, h], enabled: true, direction: 1)
+        Hardware.add_system_32_holes(group.entities, [w - t, 0, kick], [t, d, h], enabled: true, direction: -1)
+      end
+
       panel(group, 'Đáy', [t, 0, kick], [w - 2*t, d, t], {thickness: t, edge: 'Trước 1mm'})
       panel(group, 'Nóc', [t, 0, h - t], [w - 2*t, d, t], {thickness: t, edge: 'Trước 1mm'})
       cl << cut_entry('Đáy/Nóc', 2, w - 2*t, d, t, 'Trước 1mm')
@@ -144,18 +177,22 @@ module CNCFMP
       panel(group, 'Chân âm', [t, 50, 0], [w - 2*t, t, kick], {thickness: t})
       cl << cut_entry('Chân âm', 1, w - 2*t, kick, t, 'Trên 1mm')
 
-      panel(group, 'Hậu', [t, d - tb, kick + t], [w - 2*t, tb, h - kick - 2*t], {thickness: tb})
-      cl << cut_entry('Hậu', 1, w - 2*t, h - kick - 2*t, tb, '')
+      build_back_panel(group, p, w, h, t, kick, cl)
 
-      build_inner_compartments(group, p, w, h - kick, d, kick, t, tb, comps, shelves, cl, true, true)
+      build_inner_compartments(group, p, w, h - kick, d, kick, t, comps, shelves, cl, true, sys32)
       build_doors(group, p, w, h - kick, d, kick, cl)
       cl
     end
 
-    def self.build_inner_compartments(group, p, w, h, d, base_z, t, tb, comps, shelves, cl, has_back, has_top)
+    def self.build_inner_compartments(group, p, w, h, d, base_z, t, comps, shelves, cl, has_top, sys32)
       return if comps < 1
+      has_back = p['has_back'] != false
+      btype = p['back_type'] || 'flush'
+      tb = (p['back_thickness']||5).to_f
+      inset = (p['back_inset']||15).to_f
+
       inner_w = w - 2*t
-      inner_d = has_back ? d - tb : d
+      inner_d = has_back ? (btype == 'dado' ? d - inset : d - tb) : d
       inner_h = has_top ? h - 2*t : h - t
       
       comp_w = (inner_w - (comps - 1)*t) / comps.to_f
@@ -165,17 +202,22 @@ module CNCFMP
         (comps - 1).times do |i|
           x = t + (i + 1)*comp_w + i*t
           panel(group, "Vách chia #{i+1}", [x, 0, base_z + t], [t, inner_d, inner_h], {thickness: t, edge: 'Trước 1mm'})
+          if sys32
+            Hardware.add_system_32_holes(group.entities, [x, 0, base_z + t], [t, inner_d, inner_h], enabled: true, direction: 1)
+            Hardware.add_system_32_holes(group.entities, [x, 0, base_z + t], [t, inner_d, inner_h], enabled: true, direction: -1)
+          end
         end
         cl << cut_entry('Vách chia', comps - 1, inner_h, inner_d, t, 'Trước 1mm')
       end
 
-      # Đợt cho từng khoang
+      # Đợt
       if shelves > 0
         step_h = inner_h / (shelves + 1).to_f
         comps.times do |c|
           x = t + c*(comp_w + t)
           shelves.times do |i|
             z = base_z + t + step_h * (i + 1)
+            # Rút ngắn đợt 20mm để thụt vào
             panel(group, "Đợt khoang #{c+1} đợt #{i+1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'Trước 1mm'})
           end
         end
@@ -199,13 +241,11 @@ module CNCFMP
       cl << cut_entry('Cuối giường', 1, w, side_h * 0.7, t, 'Trên 1mm')
       
       if btype == 'floating'
-        # Vai giường lùi vào trong tạo hiệu ứng lơ lửng
         float_inset = 150.0
         panel(group, 'Vai trái bay',  [float_inset, t, 0], [t, d - 2*t, side_h - 100], {thickness: t, edge: 'Trên 1mm'})
         panel(group, 'Vai phải bay',  [w - float_inset - t, t, 0], [t, d - 2*t, side_h - 100], {thickness: t, edge: 'Trên 1mm'})
         cl << cut_entry('Vai giường thu nhỏ', 2, d - 2*t, side_h - 100, t, 'Trên 1mm')
         
-        # Bổ sung 2 vai ngang phụ đỡ mặt phản
         panel(group, 'Giằng phản 1', [0, d/3.0, side_h - 100 - t], [w, t, 100], {thickness: t})
         panel(group, 'Giằng phản 2', [0, 2*d/3.0, side_h - 100 - t], [w, t, 100], {thickness: t})
         cl << cut_entry('Giằng phản', 2, w, 100, t, '')
@@ -215,7 +255,6 @@ module CNCFMP
         cl << cut_entry('Vai giường', 2, d - 2*t, side_h, t, 'Trên 1mm')
       end
 
-      # Nan giường/Mặt phản
       slats = 12
       inner_d = d - 2*t
       gap = inner_d / slats.to_f
@@ -241,10 +280,34 @@ module CNCFMP
       cl
     end
 
+    def self.build_drawer_box(group, name, origin, size, thickness, cl)
+      w, d, h = size
+      t = thickness
+      slide_gap = 13.0
+      box_w = w - 2 * slide_gap
+      box_d = d - 20 
+      box_h = h - 40 
+
+      # Hồi hộc kéo
+      panel(group, "#{name} Hồi trái", [origin[0] + slide_gap, origin[1] + 10, origin[2] + 20], [t, box_d, box_h], {thickness: t, edge: 'Trên 1mm'})
+      panel(group, "#{name} Hồi phải", [origin[0] + w - slide_gap - t, origin[1] + 10, origin[2] + 20], [t, box_d, box_h], {thickness: t, edge: 'Trên 1mm'})
+      cl << cut_entry("#{name} Hồi", 2, box_d, box_h, t, 'Trên 1mm')
+
+      # Trán hộc / Lưng hộc
+      front_back_w = box_w - 2*t
+      panel(group, "#{name} Trán", [origin[0] + slide_gap + t, origin[1] + 10, origin[2] + 20], [front_back_w, t, box_h], {thickness: t, edge: 'Trên 1mm'})
+      panel(group, "#{name} Lưng", [origin[0] + slide_gap + t, origin[1] + 10 + box_d - t, origin[2] + 20], [front_back_w, t, box_h], {thickness: t, edge: 'Trên 1mm'})
+      cl << cut_entry("#{name} Trán/Lưng", 2, front_back_w, box_h, t, 'Trên 1mm')
+
+      # Đáy hộc lọt gầm
+      db_t = 5.0
+      panel(group, "#{name} Đáy", [origin[0] + slide_gap + t, origin[1] + 10 + t, origin[2] + 20], [front_back_w, box_d - 2*t, db_t], {thickness: db_t})
+      cl << cut_entry("#{name} Đáy", 1, front_back_w, box_d - 2*t, db_t, '')
+    end
+
     def self.build_bedside_table(group, p)
       w = p['width'].to_f; h = p['height'].to_f; d = p['depth'].to_f
       t = (p['thickness']||17).to_f
-      tb = (p['back_thickness']||5).to_f
       drawers = (p['drawers']||2).to_i
       cl = []
       panel(group, 'Hồi trái', [0, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm'})
@@ -254,14 +317,18 @@ module CNCFMP
       panel(group, 'Nóc', [t, 0, h - t], [w - 2*t, d, t], {thickness: t, edge: 'Trước+trái+phải 1mm'})
       cl << cut_entry('Đáy', 1, w - 2*t, d, t, '')
       cl << cut_entry('Nóc', 1, w - 2*t, d, t, 'Trước+trái+phải 1mm')
-      panel(group, 'Hậu', [t, d - tb, t], [w - 2*t, tb, h - 2*t], {thickness: tb})
-      cl << cut_entry('Hậu', 1, w - 2*t, h - 2*t, tb, '')
+      
+      build_back_panel(group, p, w, h, t, 0, cl)
+
       if drawers > 0
         inner_h = h - 2*t
         face_h = (inner_h / drawers.to_f) - 3
         drawers.times do |i|
           z = t + i * (face_h + 3)
+          # Mặt hộc kéo
           panel(group, "Mặt hộc kéo #{i+1}", [3, -18, z], [w - 6, 18, face_h], {thickness: 18, edge: 'Bo 4 cạnh 1mm'})
+          # Cấu tạo hộc kéo bên trong
+          build_drawer_box(group, "Hộc #{i+1}", [t, 0, z], [w - 2*t, d, face_h], t, cl)
         end
         cl << cut_entry('Mặt hộc kéo', drawers, w - 6, face_h, 18, 'Bo 4 cạnh 1mm')
       end
@@ -294,14 +361,15 @@ module CNCFMP
         inner_h = h - 2*t
         overlap = 30.0
         door_w = (inner_w + overlap) / doors.to_f
-        door_h = inner_h - 5 # ray trượt
-        door_y = 0
-        door_z = base_z + t + 2.5
+        door_h = inner_h - 10 # Trừ rãnh ray trượt
+        door_y = 5
+        door_z = base_z + t + 5
         base_x = t
         
-        # Ray trượt lùa
-        panel(group, 'Ray trượt trên/dưới', [t, 0, base_z + t], [inner_w, 60, 10], {thickness: 10})
-        cl << cut_entry('Ray trượt lùa', 2, inner_w, 60, 10, '')
+        # Ray trượt nhôm
+        panel(group, 'Ray nhôm trên', [t, 0, base_z + t + inner_h - 10], [inner_w, 60, 10], {thickness: 10})
+        panel(group, 'Ray nhôm dưới', [t, 0, base_z + t], [inner_w, 60, 10], {thickness: 10})
+        cl << cut_entry('Ray lùa', 2, inner_w, 60, 10, '')
       end
 
       doors.times do |i|

@@ -45,9 +45,22 @@
 
 <fieldset><legend>Vật liệu (mm)</legend>
   <div class="row"><label>Độ dày ván</label><input id="thickness" type="number" value="17"></div>
-  <div class="row" id="row_back_thickness"><label>Độ dày hậu</label><input id="back_thickness" type="number" value="5"></div>
   <div class="row" id="row_door_gap"><label>Khe hở cánh</label><input id="door_gap" type="number" value="3"></div>
   <div class="row" id="row_kickboard"><label>Chân âm (kickboard)</label><input id="kickboard" type="number" value="80"></div>
+</fieldset>
+
+<fieldset id="fs_back"><legend>Hậu tủ</legend>
+  <div class="row" id="row_has_back"><label>Có hậu</label><input id="has_back" type="checkbox" checked onchange="updateUI()"></div>
+  <div class="row" id="row_back_thickness"><label>Độ dày hậu</label><input id="back_thickness" type="number" value="5"></div>
+  <div class="row" id="row_back_type">
+    <label>Kiểu hậu</label>
+    <select id="back_type" onchange="updateUI()">
+      <option value="flush">Hậu áp (Phủ ngoài)</option>
+      <option value="dado" selected>Hậu lọt (Đánh rãnh)</option>
+    </select>
+  </div>
+  <div class="row" id="row_back_inset"><label>Khoảng lùi rãnh</label><input id="back_inset" type="number" value="15"></div>
+  <div class="row" id="row_back_groove"><label>Độ sâu rãnh (ngậm)</label><input id="back_groove" type="number" value="8"></div>
 </fieldset>
 
 <fieldset id="fs_config"><legend>Cấu hình chia ngăn</legend>
@@ -82,9 +95,9 @@
     </select>
   </div>
 
-  <div class="row" id="row_has_back"><label>Có hậu</label><input id="has_back" type="checkbox" checked></div>
   <div class="row" id="row_hinges"><label>Có bản lề</label><input id="hinges" type="checkbox" checked></div>
   <div class="row"><label>Có cam chốt</label><input id="cams" type="checkbox" checked></div>
+  <div class="row"><label>Lỗ tăng đợt 32mm</label><input id="sys32" type="checkbox" checked></div>
   <div class="row"><label>Bo cạnh</label><input id="edge_banding" type="checkbox" checked></div>
 </fieldset>
 
@@ -123,8 +136,15 @@ function updateUI() {
   show('row_shelves', ['wardrobe','base_cabinet','wall_cabinet'].includes(t));
   show('row_drawers', ['wardrobe','base_cabinet','bedside','desk'].includes(t));
 
-  show('row_back_thickness', !isBed && !isDesk);
-  show('row_has_back', !isBed && !isDesk);
+  const hasBackChecked = document.getElementById('has_back').checked;
+  const isBackDado = document.getElementById('back_type').value === 'dado';
+
+  show('fs_back', !isBed && !isDesk);
+  show('row_back_thickness', hasBackChecked);
+  show('row_back_type', hasBackChecked);
+  show('row_back_inset', hasBackChecked && isBackDado);
+  show('row_back_groove', hasBackChecked && isBackDado);
+
   show('row_kickboard', ['base_cabinet', 'wardrobe'].includes(t));
 
   show('fs_config', !isBed);
@@ -151,8 +171,12 @@ function getParams(){
     kitchen_module:id('kitchen_module') ? id('kitchen_module').value : 'standard',
     bed_type:id('bed_type') ? id('bed_type').value : 'standard',
     has_back:id('has_back') ? id('has_back').checked : false,
+    back_type:id('back_type') ? id('back_type').value : 'flush',
+    back_inset:parseFloat(id('back_inset') ? id('back_inset').value : 15),
+    back_groove:parseFloat(id('back_groove') ? id('back_groove').value : 8),
     hinges:id('hinges') ? id('hinges').checked : false,
     cams:id('cams') ? id('cams').checked : false,
+    sys32:id('sys32') ? id('sys32').checked : false,
     edge_banding:id('edge_banding') ? id('edge_banding').checked : false
   };
 }
