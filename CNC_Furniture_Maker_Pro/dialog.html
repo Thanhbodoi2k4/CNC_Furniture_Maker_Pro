@@ -102,12 +102,15 @@
     </select>
   </div>
 
-  <div class="row" id="row_hinges"><label>Có bản lề</label><input id="hinges" type="checkbox" checked></div>
-  <div class="row"><label>Có cam chốt</label><input id="cams" type="checkbox" checked></div>
-  <div class="row"><label>Lỗ tăng đợt 32mm</label><input id="sys32" type="checkbox" checked></div>
   <div class="row"><label>Bo cạnh</label><input id="edge_banding" type="checkbox" checked></div>
   <div class="row" id="row_wardrobe_led"><label>LED cảm biến tủ áo</label><input id="wardrobe_led" type="checkbox"></div>
-  <div class="row" id="row_wardrobe_open"><label>Mở cánh xem kết cấu</label><input id="wardrobe_open_view" type="checkbox" checked></div>
+  <div class="row" id="row_wardrobe_levels">
+    <label>Số tầng tủ áo</label>
+    <select id="wardrobe_levels">
+      <option value="1">1 tầng - cánh phủ toàn bộ</option>
+      <option value="2">2 tầng - cánh trên/dưới riêng</option>
+    </select>
+  </div>
 </fieldset>
 
 <fieldset id="fs_bed"><legend>Cấu hình Giường</legend>
@@ -148,11 +151,10 @@ function updateUI() {
   show('row_kitchen_module', isKit);
   show('row_bed_type', isBed);
   show('row_wardrobe_led', t === 'wardrobe');
-  show('row_wardrobe_open', t === 'wardrobe');
+  show('row_wardrobe_levels', t === 'wardrobe');
 
   show('row_doors', isCab && t !== 'bedside');
   show('row_door_gap', isCab);
-  show('row_hinges', isCab);
   
   show('row_compartments', ['wardrobe','base_cabinet','wall_cabinet'].includes(t));
   show('row_shelves', ['wardrobe','base_cabinet','wall_cabinet'].includes(t));
@@ -202,12 +204,9 @@ function getParams(){
     back_type:id('back_type') ? id('back_type').value : 'flush',
     back_inset:parseFloat(id('back_inset') ? id('back_inset').value : 15),
     back_groove:parseFloat(id('back_groove') ? id('back_groove').value : 8),
-    hinges:id('hinges') ? id('hinges').checked : false,
-    cams:id('cams') ? id('cams').checked : false,
-    sys32:id('sys32') ? id('sys32').checked : false,
     edge_banding:id('edge_banding') ? id('edge_banding').checked : false,
     wardrobe_led:id('wardrobe_led') ? id('wardrobe_led').checked : false,
-    wardrobe_open_view:id('wardrobe_open_view') ? id('wardrobe_open_view').checked : false,
+    wardrobe_levels:parseInt(id('wardrobe_levels') ? id('wardrobe_levels').value : 1),
     bed_side_h:parseFloat(id('bed_side_h') ? id('bed_side_h').value : 350),
     bed_drawers:parseInt(id('bed_drawers') ? id('bed_drawers').value : 2),
     bed_top_margin:parseFloat(id('bed_top_margin') ? id('bed_top_margin').value : 400),

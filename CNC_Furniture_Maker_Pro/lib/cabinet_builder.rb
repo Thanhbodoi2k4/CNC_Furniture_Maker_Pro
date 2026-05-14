@@ -1,4 +1,4 @@
-# encoding: UTF-8
+﻿# encoding: UTF-8
 module CNCFMP
   module CabinetBuilder
     DICT = 'CNCFMP'
@@ -19,7 +19,7 @@ module CNCFMP
           when 'bed'            then build_bed(group, p)
           when 'desk'           then build_desk(group, p)
           when 'bedside'        then build_bedside_table(group, p)
-          else raise "Loại sản phẩm không hợp lệ: #{type}"
+          else raise "Loáº¡i sáº£n pháº©m khÃ´ng há»£p lá»‡: #{type}"
           end
         model.commit_operation
         cutlist
@@ -67,16 +67,16 @@ module CNCFMP
 
     def self.kitchen_module_note(mod)
       {
-        'sink' => 'Khoang chậu rửa, hậu hở kỹ thuật',
-        'cooktop' => 'Khoang bếp, có thoáng khí',
-        'oven' => 'Khoang lò, có khe thoát nhiệt',
-        'drawer' => 'Khoang ngăn kéo phụ kiện',
-        'dishwasher' => 'Khoang máy rửa bát',
-        'corner_dead' => 'Góc L chết',
-        'corner_45' => 'Góc L xéo 45',
-        'dish_rack' => 'Khoang giá bát đĩa',
-        'extractor' => 'Khoang máy hút mùi'
-      }[mod] || 'Khoang tiêu chuẩn'
+        'sink' => 'Khoang cháº­u rá»­a, háº­u há»Ÿ ká»¹ thuáº­t',
+        'cooktop' => 'Khoang báº¿p, cÃ³ thoÃ¡ng khÃ­',
+        'oven' => 'Khoang lÃ², cÃ³ khe thoÃ¡t nhiá»‡t',
+        'drawer' => 'Khoang ngÄƒn kÃ©o phá»¥ kiá»‡n',
+        'dishwasher' => 'Khoang mÃ¡y rá»­a bÃ¡t',
+        'corner_dead' => 'GÃ³c L cháº¿t',
+        'corner_45' => 'GÃ³c L xÃ©o 45',
+        'dish_rack' => 'Khoang giÃ¡ bÃ¡t Ä‘Ä©a',
+        'extractor' => 'Khoang mÃ¡y hÃºt mÃ¹i'
+      }[mod] || 'Khoang tiÃªu chuáº©n'
     end
 
     def self.build_drawer_bank(group, p, origin, size, count, cl)
@@ -86,7 +86,7 @@ module CNCFMP
       w, d, h = size
       t = (p['thickness'] || 17).to_f
       gap = (p['door_gap'] || 3).to_f
-      face_t = 18.0
+      face_t = t
       usable_h = h - gap * (count + 1)
       return if usable_h <= 80.0 || w <= 120.0 || d <= 180.0
 
@@ -95,68 +95,77 @@ module CNCFMP
         z = origin[2] + gap + i * (face_h + gap)
         face_origin = [origin[0] + gap, origin[1] - face_t - gap, z]
         face_size = [w - 2 * gap, face_t, face_h]
-        panel(group, "Mặt ngăn kéo #{i + 1}", face_origin, face_size, {thickness: face_t, edge: 'Bo 4 cạnh 1mm'})
-        Hardware.add_pull_handle(group.entities, face_origin, face_size, enabled: true, name: "Tay nắm NK #{i + 1}", horizontal: true)
-        build_drawer_box(group, "Hộc kéo #{i + 1}", [origin[0], origin[1], z], [w, d, face_h], t, cl)
+        panel(group, "Máº·t ngÄƒn kÃ©o #{i + 1}", face_origin, face_size, {thickness: face_t, edge: 'Bo 4 cáº¡nh 1mm'})
+        build_drawer_box(group, "Há»™c kÃ©o #{i + 1}", [origin[0], origin[1], z], [w, d, face_h], t, cl)
       end
-      cl << cut_entry('Mặt ngăn kéo', count, w - 2 * gap, face_h, face_t, 'Bo 4 cạnh 1mm', 'Kèm tay nắm')
+      cl << cut_entry('Máº·t ngÄƒn kÃ©o', count, w - 2 * gap, face_h, face_t, 'Bo 4 cáº¡nh 1mm')
     end
 
     def self.build_wardrobe_front_trim(group, w, h, d, kick, t, comps, comp_w, cl)
       plinth_h = [kick, 90.0].max
-      panel(group, 'Phào chân trước', [-12.0, -18.0, 0], [w + 24.0, 18.0, plinth_h], {thickness: 18, edge: 'Bo trên 1mm', note: 'Phào/chân tủ'})
-      panel(group, 'Phào chân trái', [-12.0, 0, 0], [18.0, d, plinth_h], {thickness: 18, note: 'Phào hông chân'})
-      panel(group, 'Phào chân phải', [w - 6.0, 0, 0], [18.0, d, plinth_h], {thickness: 18, note: 'Phào hông chân'})
-      panel(group, 'Phào nóc trước', [-18.0, -20.0, h], [w + 36.0, 28.0, 60.0], {thickness: 18, edge: 'Bo cạnh', note: 'Phào nóc tủ'})
-      panel(group, 'Phào nóc trái', [-18.0, 0, h], [28.0, d, 60.0], {thickness: 18, note: 'Phào nóc hông'})
-      panel(group, 'Phào nóc phải', [w - 10.0, 0, h], [28.0, d, 60.0], {thickness: 18, note: 'Phào nóc hông'})
+      top_rail_h = 60.0
+      rail_len = [w - 2*t, t].max
 
-      nẹp_w = 28.0
-      panel(group, 'Nẹp đứng mặt tiền trái', [-nẹp_w, -16.0, kick], [nẹp_w, 18.0, h - kick], {thickness: 18, edge: 'Bo cạnh', note: 'Nẹp mặt tiền'})
-      panel(group, 'Nẹp đứng mặt tiền phải', [w, -16.0, kick], [nẹp_w, 18.0, h - kick], {thickness: 18, edge: 'Bo cạnh', note: 'Nẹp mặt tiền'})
-      (comps - 1).times do |i|
-        x = t + (i + 1)*comp_w + i*t - nẹp_w / 2.0
-        panel(group, "Nẹp đứng chia cánh #{i + 1}", [x, -16.0, kick], [nẹp_w, 18.0, h - kick], {thickness: 18, edge: 'Bo cạnh', note: 'Che hồi giữa/chia cánh'})
+      panel(group, 'Phao chan truoc', [t, -t, 0], [rail_len, t, plinth_h], {thickness: t, edge: 'Bo tren 1mm', note: 'Thanh chan truoc nam giua hai hoi ngoai'})
+      panel(group, 'Phao chan sau', [t, d, 0], [rail_len, t, plinth_h], {thickness: t, edge: 'Bo tren 1mm', note: 'Thanh chan sau nam giua hai hoi ngoai'})
+      panel(group, 'Phao noc truoc', [t, -t, h - top_rail_h], [rail_len, t, top_rail_h], {thickness: t, edge: 'Bo canh', note: 'Thanh phao noc truoc nam trong chieu cao tu, giua hai hoi ngoai'})
+      panel(group, 'Phao noc sau', [t, d, h - top_rail_h], [rail_len, t, top_rail_h], {thickness: t, edge: 'Bo canh', note: 'Thanh phao noc sau nam trong chieu cao tu, giua hai hoi ngoai'})
+
+      cl << cut_entry('Phao chan truoc/sau', 2, rail_len, plinth_h, t, 'Bo tren 1mm')
+      cl << cut_entry('Phao noc truoc/sau', 2, rail_len, top_rail_h, t, 'Bo canh')
+    end
+    def self.build_wardrobe_doors(group, p, w, h, d, base_z, comp_w, cl)
+      levels = [[(p['wardrobe_levels'] || 1).to_i, 1].max, 2].min
+      dtype = p['door_type'] || 'overlay'
+      t = (p['thickness'] || 17).to_f
+      gap = (p['door_gap'] || 3).to_f
+
+      if levels == 2
+        upper_h = [h * 0.28, 420.0].max
+        upper_h = [upper_h, h * 0.38].min
+        lower_h = h - upper_h - t
+        split_z = base_z + lower_h
+        panel(group, 'Äá»£t chia táº§ng cÃ¡nh', [t, 0, split_z], [w - 2*t, d, t], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'TÃ¡ch cÃ¡nh táº§ng trÃªn/dÆ°á»›i'})
+        cl << cut_entry('Äá»£t chia táº§ng cÃ¡nh', 1, w - 2*t, d, t, 'TrÆ°á»›c 1mm')
+
+        build_doors_for_zone(group, p, w, lower_h, d, base_z, cl, "#{dtype}_dÆ°á»›i")
+        build_doors_for_zone(group, p, w, upper_h, d, split_z + t, cl, "#{dtype}_trÃªn")
+      else
+        build_doors_for_zone(group, p, w, h, d, base_z, cl, dtype)
       end
-
-      foot_w = 70.0
-      [[70.0, 55.0], [w - 140.0, 55.0], [70.0, d - 125.0], [w - 140.0, d - 125.0]].each_with_index do |(x, y), i|
-        panel(group, "Chân tủ #{i + 1}", [x, y, 0], [foot_w, foot_w, plinth_h], {thickness: foot_w, note: 'Chân tủ nhìn thấy'})
-      end
-
-      cl << cut_entry('Phào chân', 3, w, plinth_h, 18, 'Bo trên 1mm')
-      cl << cut_entry('Phào nóc', 3, w, 60, 18, 'Bo cạnh')
-      cl << cut_entry('Nẹp đứng mặt tiền', comps + 1, h - kick, nẹp_w, 18, 'Bo cạnh')
     end
 
-    def self.build_wardrobe_doors(group, p, w, h, d, base_z, comp_w, cl)
+    def self.build_doors_for_zone(group, p, w, h, d, base_z, cl, label)
       doors = (p['doors'] || 0).to_i
       return if doors <= 0
 
       gap = (p['door_gap'] || 3).to_f
       t = (p['thickness'] || 17).to_f
-      door_h = h - gap * 2
-      door_w = (w - gap * (doors + 1)) / doors.to_f
+      dtype = p['door_type'] || 'overlay'
 
-      if p['wardrobe_open_view'] != false
+      if dtype == 'sliding'
+        inner_w = w - 2*t
+        rail_d = t
+        overlap = doors > 1 ? 30.0 : 0.0
+        door_w = (inner_w + overlap * [doors - 1, 0].max) / doors.to_f
+        door_h = h - 2*gap - 2*rail_d
+        door_z = base_z + gap + rail_d
+        base_x = t
+
+        panel(group, "Ray lÃ¹a trÃªn #{label}", [t, -t, base_z + h - rail_d], [inner_w, t, rail_d], {thickness: t, note: 'RÃ£nh/ray cá»­a lÃ¹a'})
+        panel(group, "Ray lÃ¹a dÆ°á»›i #{label}", [t, -t, base_z], [inner_w, t, rail_d], {thickness: t, note: 'RÃ£nh/ray cá»­a lÃ¹a'})
+        cl << cut_entry('Ray lÃ¹a', 2, inner_w, t, t, '', label)
+
         doors.times do |i|
-          x_closed = gap + i * (door_w + gap)
-          hinge_left = i.even?
-          x = hinge_left ? x_closed : x_closed + door_w - t
-          y = -door_w - 80.0
-          name = doors == 1 ? 'Cánh mở' : "Cánh mở #{i + 1}"
-          panel(group, name, [x, y, base_z + gap], [t, door_w, door_h], {thickness: t, edge: 'Bo 4 cạnh 1mm', note: 'Mở 90 độ để xem kết cấu trong tủ'})
-          Hardware.add_pull_handle(group.entities, [x, y, base_z + gap], [t, door_w, door_h], enabled: true, name: "Tay nắm #{name}", horizontal: false)
-          if p['hinges']
-            Hardware.add_hinge_cup_markers(group.entities, [x, y, base_z + gap], [t, door_w, door_h], enabled: true)
-          end
+          x = base_x + (doors > 1 ? i * (door_w - overlap) : 0)
+          y = -t - (i.even? ? t : 2*t + gap)
+          name = doors == 1 ? "CÃ¡nh lÃ¹a #{label}" : "CÃ¡nh lÃ¹a #{label} #{i + 1}"
+          panel(group, name, [x, y, door_z], [door_w, t, door_h], {thickness: t, edge: 'Bo 4 cáº¡nh 1mm'})
         end
+        cl << cut_entry('CÃ¡nh lÃ¹a', doors, door_h, door_w, t, 'Bo 4 cáº¡nh 1mm', label)
       else
         build_doors(group, p, w, h, d, base_z, cl)
-        return
       end
-
-      cl << cut_entry('Cánh', doors, door_h, door_w, t, 'Bo 4 cạnh 1mm', 'Hiển thị mở 90 độ')
     end
 
     def self.build_back_panel(group, p, w, h, t, kick, cl)
@@ -172,22 +181,18 @@ module CNCFMP
       d = p['depth'].to_f
 
       if btype == 'dado'
-        # Hậu rãnh
+        # Háº­u rÃ£nh
         b_w = w - 2*t + 2*groove
         b_h = h - kick - 2*t + 2*groove
         b_x = t - groove
         b_y = d - inset - tb
         b_z = kick + t - groove
-        panel(group, 'Hậu (Rãnh)', [b_x, b_y, b_z], [b_w, tb, b_h], {thickness: tb})
-        panel(group, 'Dấu rãnh hậu trái', [0, b_y, b_z], [t, tb, b_h], {thickness: tb, note: "Rãnh hậu #{groove}mm"})
-        panel(group, 'Dấu rãnh hậu phải', [w - t, b_y, b_z], [t, tb, b_h], {thickness: tb, note: "Rãnh hậu #{groove}mm"})
-        panel(group, 'Dấu rãnh hậu đáy', [b_x, b_y, kick], [b_w, tb, t], {thickness: tb, note: "Rãnh hậu #{groove}mm"})
-        panel(group, 'Dấu rãnh hậu nóc', [b_x, b_y, h - t], [b_w, tb, t], {thickness: tb, note: "Rãnh hậu #{groove}mm"})
-        cl << cut_entry('Hậu', 1, b_w, b_h, tb, "Đánh rãnh #{groove}mm")
+        panel(group, 'Háº­u (RÃ£nh)', [b_x, b_y, b_z], [b_w, tb, b_h], {thickness: tb})
+        cl << cut_entry('Háº­u', 1, b_w, b_h, tb, "ÄÃ¡nh rÃ£nh #{groove}mm")
       else
-        # Hậu áp
-        panel(group, 'Hậu (Áp)', [t, d - tb, kick + t], [w - 2*t, tb, h - kick - 2*t], {thickness: tb})
-        cl << cut_entry('Hậu', 1, w - 2*t, h - kick - 2*t, tb, '')
+        # Háº­u Ã¡p
+        panel(group, 'Háº­u (Ãp)', [t, d - tb, kick + t], [w - 2*t, tb, h - kick - 2*t], {thickness: tb})
+        cl << cut_entry('Háº­u', 1, w - 2*t, h - kick - 2*t, tb, '')
       end
     end
 
@@ -199,7 +204,7 @@ module CNCFMP
       comps = auto_kitchen_compartments(w, t, (p['compartments']||1).to_i)
       drawers = (p['drawers'] || 0).to_i
       mod = p['kitchen_module'] || 'standard'
-      sys32 = p['sys32'] == true
+      sys32 = false
       inner_w = w - 2*t
       inner_d = internal_depth(p, d)
       body_z = kick
@@ -208,9 +213,9 @@ module CNCFMP
       open_technical_back = ['sink', 'cooktop', 'oven', 'dishwasher'].include?(mod)
       cl = []
       
-      panel(group, 'Hồi ngoài trái tủ dưới',  [0, 0, body_z], [t, d, body_h], {thickness: t, edge: 'Trước 1mm', note: 'Chịu tải mặt đá'})
-      panel(group, 'Hồi ngoài phải tủ dưới',  [w - t, 0, body_z], [t, d, body_h], {thickness: t, edge: 'Trước 1mm', note: 'Chịu tải mặt đá'})
-      cl << cut_entry('Hồi ngoài tủ dưới', 2, body_h, d, t, 'Trước 1mm', 'Chịu lực mặt đá')
+      panel(group, 'Há»“i ngoÃ i trÃ¡i tá»§ dÆ°á»›i',  [0, 0, body_z], [t, d, body_h], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Chá»‹u táº£i máº·t Ä‘Ã¡'})
+      panel(group, 'Há»“i ngoÃ i pháº£i tá»§ dÆ°á»›i',  [w - t, 0, body_z], [t, d, body_h], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Chá»‹u táº£i máº·t Ä‘Ã¡'})
+      cl << cut_entry('Há»“i ngoÃ i tá»§ dÆ°á»›i', 2, body_h, d, t, 'TrÆ°á»›c 1mm', 'Chá»‹u lá»±c máº·t Ä‘Ã¡')
 
       if sys32
         Hardware.add_system_32_holes(group.entities, [0, 0, body_z + t], [t, d, body_h - t], enabled: true, direction: 1)
@@ -218,54 +223,54 @@ module CNCFMP
       end
 
       if mod == 'dishwasher'
-        panel(group, 'Giằng trên trước', [t, 0, h - t], [inner_w, 100, t], {thickness: t, note: 'Đỡ mặt đá'})
-        panel(group, 'Giằng trên sau',   [t, d - 100, h - t], [inner_w, 100, t], {thickness: t, note: 'Đỡ mặt đá'})
-        panel(group, 'Đố giữ máy rửa bát trái', [t, 0, body_z], [t, d, body_h], {thickness: t, note: 'Khoang thiết bị'})
-        panel(group, 'Đố giữ máy rửa bát phải', [w - 2*t, 0, body_z], [t, d, body_h], {thickness: t, note: 'Khoang thiết bị'})
-        panel(group, 'Chân âm máy rửa bát', [t, 50, 0], [inner_w, t, kick], {thickness: t, edge: 'Trên 1mm'})
-        panel(group, 'Mặt đá bếp', [-20, -20, h], [w + 40, d + 40, 20], {thickness: 20, edge: 'Bo cạnh đá', note: 'Mặt đá 18-20mm'})
+        panel(group, 'Giáº±ng trÃªn trÆ°á»›c', [t, 0, h - t], [inner_w, 100, t], {thickness: t, note: 'Äá»¡ máº·t Ä‘Ã¡'})
+        panel(group, 'Giáº±ng trÃªn sau',   [t, d - 100, h - t], [inner_w, 100, t], {thickness: t, note: 'Äá»¡ máº·t Ä‘Ã¡'})
+        panel(group, 'Äá»‘ giá»¯ mÃ¡y rá»­a bÃ¡t trÃ¡i', [t, 0, body_z], [t, d, body_h], {thickness: t, note: 'Khoang thiáº¿t bá»‹'})
+        panel(group, 'Äá»‘ giá»¯ mÃ¡y rá»­a bÃ¡t pháº£i', [w - 2*t, 0, body_z], [t, d, body_h], {thickness: t, note: 'Khoang thiáº¿t bá»‹'})
+        panel(group, 'ChÃ¢n Ã¢m mÃ¡y rá»­a bÃ¡t', [t, 50, 0], [inner_w, t, kick], {thickness: t, edge: 'TrÃªn 1mm'})
+        panel(group, 'Máº·t Ä‘Ã¡ báº¿p', [-20, -20, h], [w + 40, d + 40, t], {thickness: t, edge: 'Bo cáº¡nh Ä‘Ã¡', note: 'DÃ y theo váº­t liá»‡u nháº­p'})
         Hardware.add_adjustable_feet(group.entities, w, d, kick, t, enabled: true)
-        Hardware.add_carcass_joint_markers(group.entities, [t, w - t], d, kick + t, h - t, enabled: p['cams'] != false)
-        cl << cut_entry('Giằng trên', 2, inner_w, 100, t, '', 'Khoang máy rửa bát')
-        cl << cut_entry('Chân âm', 1, inner_w, kick, t, 'Trên 1mm', 'Khoang máy rửa bát')
+        Hardware.add_carcass_joint_markers(group.entities, [t, w - t], d, kick + t, h - t, enabled: false)
+        cl << cut_entry('Giáº±ng trÃªn', 2, inner_w, 100, t, '', 'Khoang mÃ¡y rá»­a bÃ¡t')
+        cl << cut_entry('ChÃ¢n Ã¢m', 1, inner_w, kick, t, 'TrÃªn 1mm', 'Khoang mÃ¡y rá»­a bÃ¡t')
         return cl
       end
 
-      panel(group, 'Đáy tủ dưới', [t, 0, kick], [inner_w, d, t], {thickness: t, edge: 'Trước 1mm', note: 'Đáy liền chịu lực nồi chảo'})
-      cl << cut_entry('Đáy tủ dưới', 1, inner_w, d, t, 'Trước 1mm', 'Đáy liền')
+      panel(group, 'ÄÃ¡y tá»§ dÆ°á»›i', [t, 0, kick], [inner_w, d, t], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'ÄÃ¡y liá»n chá»‹u lá»±c ná»“i cháº£o'})
+      cl << cut_entry('ÄÃ¡y tá»§ dÆ°á»›i', 1, inner_w, d, t, 'TrÆ°á»›c 1mm', 'ÄÃ¡y liá»n')
 
-      panel(group, 'Giằng mặt đá trước', [t, 0, h - t], [inner_w, 90, t], {thickness: t, note: 'Đỡ mặt đá, giữ vuông tủ'})
-      panel(group, 'Giằng mặt đá sau',   [t, d - 90, h - t], [inner_w, 90, t], {thickness: t, note: 'Đỡ mặt đá, giữ vuông tủ'})
-      cl << cut_entry('Giằng mặt đá', 2, inner_w, 90, t, '', 'Tủ dưới không dùng nóc kín')
+      panel(group, 'Giáº±ng máº·t Ä‘Ã¡ trÆ°á»›c', [t, 0, h - t], [inner_w, 90, t], {thickness: t, note: 'Äá»¡ máº·t Ä‘Ã¡, giá»¯ vuÃ´ng tá»§'})
+      panel(group, 'Giáº±ng máº·t Ä‘Ã¡ sau',   [t, d - 90, h - t], [inner_w, 90, t], {thickness: t, note: 'Äá»¡ máº·t Ä‘Ã¡, giá»¯ vuÃ´ng tá»§'})
+      cl << cut_entry('Giáº±ng máº·t Ä‘Ã¡', 2, inner_w, 90, t, '', 'Tá»§ dÆ°á»›i khÃ´ng dÃ¹ng nÃ³c kÃ­n')
 
       if open_technical_back
-        panel(group, 'Giằng hậu kỹ thuật trên', [t, d - 80, h - 170], [inner_w, t, 90], {thickness: t, note: kitchen_module_note(mod)})
-        panel(group, 'Giằng hậu kỹ thuật dưới', [t, d - 80, kick + t], [inner_w, t, 90], {thickness: t, note: 'Hậu hở đi điện nước'})
-        cl << cut_entry('Giằng hậu kỹ thuật', 2, inner_w, 90, t, '', kitchen_module_note(mod))
+        panel(group, 'Giáº±ng háº­u ká»¹ thuáº­t trÃªn', [t, d - 80, h - 170], [inner_w, t, 90], {thickness: t, note: kitchen_module_note(mod)})
+        panel(group, 'Giáº±ng háº­u ká»¹ thuáº­t dÆ°á»›i', [t, d - 80, kick + t], [inner_w, t, 90], {thickness: t, note: 'Háº­u há»Ÿ Ä‘i Ä‘iá»‡n nÆ°á»›c'})
+        cl << cut_entry('Giáº±ng háº­u ká»¹ thuáº­t', 2, inner_w, 90, t, '', kitchen_module_note(mod))
       else
         build_back_panel(group, p, w, h, t, kick, cl)
       end
 
-      panel(group, 'Chân âm trước', [t, 50, 0], [inner_w, t, kick], {thickness: t, edge: 'Trên 1mm'})
-      panel(group, 'Chân âm sau', [t, d - 70, 0], [inner_w, t, kick], {thickness: t})
-      cl << cut_entry('Chân âm', 2, inner_w, kick, t, 'Trên 1mm', 'Chống ẩm sàn')
+      panel(group, 'ChÃ¢n Ã¢m trÆ°á»›c', [t, 50, 0], [inner_w, t, kick], {thickness: t, edge: 'TrÃªn 1mm'})
+      panel(group, 'ChÃ¢n Ã¢m sau', [t, d - 70, 0], [inner_w, t, kick], {thickness: t})
+      cl << cut_entry('ChÃ¢n Ã¢m', 2, inner_w, kick, t, 'TrÃªn 1mm', 'Chá»‘ng áº©m sÃ n')
       Hardware.add_adjustable_feet(group.entities, w, d, kick, t, enabled: true)
 
       joint_x = [t]
       if comps > 1
         (comps - 1).times do |i|
           x = t + (i + 1)*comp_w + i*t
-          panel(group, "Hồi giữa tủ dưới #{i + 1}", [x, 0, kick + t], [t, d, h - kick - 2*t], {thickness: t, edge: 'Trước 1mm', note: 'Chia module 600-800, đỡ mặt đá'})
+          panel(group, "Há»“i giá»¯a tá»§ dÆ°á»›i #{i + 1}", [x, 0, kick + t], [t, d, h - kick - 2*t], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Chia module 600-800, Ä‘á»¡ máº·t Ä‘Ã¡'})
           joint_x << x
           if sys32
             Hardware.add_system_32_holes(group.entities, [x, 0, kick + t], [t, d, h - kick - 2*t], enabled: true, direction: 1)
             Hardware.add_system_32_holes(group.entities, [x, 0, kick + t], [t, d, h - kick - 2*t], enabled: true, direction: -1)
           end
         end
-        cl << cut_entry('Hồi giữa tủ dưới', comps - 1, h - kick - 2*t, d, t, 'Trước 1mm', 'Chia khoang, đỡ thiết bị')
+        cl << cut_entry('Há»“i giá»¯a tá»§ dÆ°á»›i', comps - 1, h - kick - 2*t, d, t, 'TrÆ°á»›c 1mm', 'Chia khoang, Ä‘á»¡ thiáº¿t bá»‹')
       end
       joint_x << (w - t)
-      Hardware.add_carcass_joint_markers(group.entities, joint_x, d, kick + t, h - t, enabled: p['cams'] != false)
+      Hardware.add_carcass_joint_markers(group.entities, joint_x, d, kick + t, h - t, enabled: false)
 
       if shelves > 0 && !['sink', 'oven', 'dishwasher', 'corner_dead', 'corner_45'].include?(mod)
         step_h = (h - kick - 2*t) / (shelves + 1).to_f
@@ -273,10 +278,10 @@ module CNCFMP
           x = t + c*(comp_w + t)
           shelves.times do |i|
             z = kick + t + step_h * (i + 1)
-            panel(group, "Đợt tủ dưới khoang #{c + 1}.#{i + 1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'Trước 1mm'})
+            panel(group, "Äá»£t tá»§ dÆ°á»›i khoang #{c + 1}.#{i + 1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
           end
         end
-        cl << cut_entry('Đợt tủ dưới', comps * shelves, comp_w, inner_d - 20, t, 'Trước 1mm', 'Để đồ khô')
+        cl << cut_entry('Äá»£t tá»§ dÆ°á»›i', comps * shelves, comp_w, inner_d - 20, t, 'TrÆ°á»›c 1mm', 'Äá»ƒ Ä‘á»“ khÃ´')
       end
 
       if drawers > 0 || mod == 'drawer'
@@ -285,21 +290,21 @@ module CNCFMP
       end
 
       if mod == 'sink'
-        panel(group, 'Chậu rửa âm mặt đá', [t + 80, 110, h + 2], [comp_w - 160, 420, 18], {thickness: 18, note: 'Khoét chậu rửa'})
-        panel(group, 'Ống kỹ thuật chậu rửa', [t + comp_w/2.0 - 25, d - 120, kick + 80], [50, 50, h - kick - 180], {thickness: 50, note: 'Đường nước/xả'})
+        panel(group, 'Cháº­u rá»­a Ã¢m máº·t Ä‘Ã¡', [t + 80, 110, h + 2], [comp_w - 160, 420, t], {thickness: t, note: 'KhoÃ©t cháº­u rá»­a'})
+        panel(group, 'á»ng ká»¹ thuáº­t cháº­u rá»­a', [t + comp_w/2.0 - t/2.0, d - 120, kick + 80], [t, t, h - kick - 180], {thickness: t, note: 'ÄÆ°á»ng nÆ°á»›c/xáº£'})
       elsif mod == 'cooktop'
-        panel(group, 'Bếp từ/bếp gas âm', [t + 80, 130, h + 2], [comp_w - 160, 380, 12], {thickness: 12, note: 'Khoét bếp, thoáng khí'})
-        panel(group, 'Khe thoáng bếp', [t + 40, d - 40, h - 230], [comp_w - 80, 12, 80], {thickness: 12, note: 'Thoát nhiệt'})
+        panel(group, 'Báº¿p tá»«/báº¿p gas Ã¢m', [t + 80, 130, h + 2], [comp_w - 160, 380, t], {thickness: t, note: 'KhoÃ©t báº¿p, thoÃ¡ng khÃ­'})
+        panel(group, 'Khe thoÃ¡ng báº¿p', [t + 40, d - 40, h - 230], [comp_w - 80, t, 80], {thickness: t, note: 'ThoÃ¡t nhiá»‡t'})
       elsif mod == 'oven'
-        panel(group, 'Mặt lò nướng', [t + 30, -18, kick + 140], [comp_w - 60, 18, 460], {thickness: 18, note: 'Module lò âm'})
-        panel(group, 'Khe thoát nhiệt lò', [t + 60, -22, kick + 630], [comp_w - 120, 12, 35], {thickness: 12, note: 'Thoát nhiệt'})
+        panel(group, 'Máº·t lÃ² nÆ°á»›ng', [t + 30, -t, kick + 140], [comp_w - 60, t, 460], {thickness: t, note: 'Module lÃ² Ã¢m'})
+        panel(group, 'Khe thoÃ¡t nhiá»‡t lÃ²', [t + 60, -t, kick + 630], [comp_w - 120, t, 35], {thickness: t, note: 'ThoÃ¡t nhiá»‡t'})
       elsif mod == 'corner_dead'
-        panel(group, 'Tấm góc chết chữ L', [w - comp_w - t, d - comp_w, kick + t], [comp_w, comp_w, t], {thickness: t, note: 'Góc L chết lưu trữ sâu'})
+        panel(group, 'Táº¥m gÃ³c cháº¿t chá»¯ L', [w - comp_w - t, d - comp_w, kick + t], [comp_w, comp_w, t], {thickness: t, note: 'GÃ³c L cháº¿t lÆ°u trá»¯ sÃ¢u'})
       elsif mod == 'corner_45'
-        panel(group, 'Đố góc xéo 45', [w - comp_w, d - 80, kick + t], [comp_w, 80, h - kick - 2*t], {thickness: t, note: 'Mô phỏng góc xéo 45'})
+        panel(group, 'Äá»‘ gÃ³c xÃ©o 45', [w - comp_w, d - 80, kick + t], [comp_w, 80, h - kick - 2*t], {thickness: t, note: 'MÃ´ phá»ng gÃ³c xÃ©o 45'})
       end
 
-      panel(group, 'Mặt đá bếp', [-20, -20, h], [w + 40, d + 40, 20], {thickness: 20, edge: 'Bo cạnh đá', note: 'Mặt đá 18-20mm'})
+      panel(group, 'Máº·t Ä‘Ã¡ báº¿p', [-20, -20, h], [w + 40, d + 40, t], {thickness: t, edge: 'Bo cáº¡nh Ä‘Ã¡', note: 'DÃ y theo váº­t liá»‡u nháº­p'})
       
       build_doors(group, p, w, h - kick, d, kick, cl) unless drawers > 0 || ['drawer', 'oven', 'dishwasher'].include?(mod)
       cl
@@ -311,14 +316,14 @@ module CNCFMP
       shelves = (p['shelves']||1).to_i
       comps = auto_kitchen_compartments(w, t, (p['compartments']||1).to_i)
       mod = p['kitchen_module'] || 'standard'
-      sys32 = p['sys32'] == true
+      sys32 = false
       inner_w = w - 2*t
       inner_d = internal_depth(p, d)
       comp_w = (inner_w - (comps - 1)*t) / comps.to_f
       cl = []
-      panel(group, 'Hồi ngoài trái tủ trên',  [0, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm', note: 'Tủ treo tường'})
-      panel(group, 'Hồi ngoài phải tủ trên',  [w - t, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm', note: 'Tủ treo tường'})
-      cl << cut_entry('Hồi ngoài tủ trên', 2, h, d, t, 'Trước 1mm', 'Tủ treo nhẹ hơn tủ dưới')
+      panel(group, 'Há»“i ngoÃ i trÃ¡i tá»§ trÃªn',  [0, 0, 0], [t, d, h], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Tá»§ treo tÆ°á»ng'})
+      panel(group, 'Há»“i ngoÃ i pháº£i tá»§ trÃªn',  [w - t, 0, 0], [t, d, h], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Tá»§ treo tÆ°á»ng'})
+      cl << cut_entry('Há»“i ngoÃ i tá»§ trÃªn', 2, h, d, t, 'TrÆ°á»›c 1mm', 'Tá»§ treo nháº¹ hÆ¡n tá»§ dÆ°á»›i')
 
       if sys32
         Hardware.add_system_32_holes(group.entities, [0, 0, 0], [t, d, h], enabled: true, direction: 1)
@@ -326,14 +331,14 @@ module CNCFMP
       end
 
       if mod == 'extractor'
-        panel(group, 'Nóc tủ hút mùi', [t, 0, h - t], [inner_w, d, t], {thickness: t, edge: 'Trước 1mm'})
-        panel(group, 'Đáy che ống hút mùi', [t, 0, 150], [inner_w, d, t], {thickness: t, edge: 'Trước 1mm'})
-        panel(group, 'Ống hút mùi', [w/2.0 - 75, d - 120, 150 + t], [150, 120, h - 2*t - 150], {thickness: 18, note: 'Khoang máy hút mùi'})
-        cl << cut_entry('Nóc/đáy che hút mùi', 2, inner_w, d, t, 'Trước 1mm', 'Khoét ống hút')
+        panel(group, 'NÃ³c tá»§ hÃºt mÃ¹i', [t, 0, h - t], [inner_w, d, t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
+        panel(group, 'ÄÃ¡y che á»‘ng hÃºt mÃ¹i', [t, 0, 150], [inner_w, d, t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
+        panel(group, 'á»ng hÃºt mÃ¹i', [w/2.0 - 75, d - 120, 150 + t], [150, 120, h - 2*t - 150], {thickness: t, note: 'Khoang mÃ¡y hÃºt mÃ¹i'})
+        cl << cut_entry('NÃ³c/Ä‘Ã¡y che hÃºt mÃ¹i', 2, inner_w, d, t, 'TrÆ°á»›c 1mm', 'KhoÃ©t á»‘ng hÃºt')
       else
-        panel(group, 'Đáy tủ trên', [t, 0, 0], [inner_w, d, t], {thickness: t, edge: 'Trước 1mm'})
-        panel(group, 'Nóc tủ trên', [t, 0, h - t], [inner_w, d, t], {thickness: t, edge: 'Trước 1mm'})
-        cl << cut_entry('Đáy/Nóc tủ trên', 2, inner_w, d, t, 'Trước 1mm')
+        panel(group, 'ÄÃ¡y tá»§ trÃªn', [t, 0, 0], [inner_w, d, t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
+        panel(group, 'NÃ³c tá»§ trÃªn', [t, 0, h - t], [inner_w, d, t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
+        cl << cut_entry('ÄÃ¡y/NÃ³c tá»§ trÃªn', 2, inner_w, d, t, 'TrÆ°á»›c 1mm')
       end
 
       build_back_panel(group, p, w, h, t, 0, cl)
@@ -342,13 +347,13 @@ module CNCFMP
       if comps > 1
         (comps - 1).times do |i|
           x = t + (i + 1)*comp_w + i*t
-          panel(group, "Hồi giữa tủ trên #{i + 1}", [x, 0, t], [t, d, h - 2*t], {thickness: t, edge: 'Trước 1mm', note: 'Chia module tủ treo'})
+          panel(group, "Há»“i giá»¯a tá»§ trÃªn #{i + 1}", [x, 0, t], [t, d, h - 2*t], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Chia module tá»§ treo'})
           joint_x << x
         end
-        cl << cut_entry('Hồi giữa tủ trên', comps - 1, h - 2*t, d, t, 'Trước 1mm')
+        cl << cut_entry('Há»“i giá»¯a tá»§ trÃªn', comps - 1, h - 2*t, d, t, 'TrÆ°á»›c 1mm')
       end
       joint_x << (w - t)
-      Hardware.add_carcass_joint_markers(group.entities, joint_x, d, t, h - t, enabled: p['cams'] != false)
+      Hardware.add_carcass_joint_markers(group.entities, joint_x, d, t, h - t, enabled: false)
 
       if shelves > 0 && mod != 'extractor'
         step_h = (h - 2*t) / (shelves + 1).to_f
@@ -356,18 +361,18 @@ module CNCFMP
           x = t + c*(comp_w + t)
           shelves.times do |i|
             z = t + step_h * (i + 1)
-            panel(group, "Đợt tủ trên khoang #{c + 1}.#{i + 1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'Trước 1mm'})
+            panel(group, "Äá»£t tá»§ trÃªn khoang #{c + 1}.#{i + 1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
           end
         end
-        cl << cut_entry('Đợt tủ trên', comps * shelves, comp_w, inner_d - 20, t, 'Trước 1mm')
+        cl << cut_entry('Äá»£t tá»§ trÃªn', comps * shelves, comp_w, inner_d - 20, t, 'TrÆ°á»›c 1mm')
       end
 
-      panel(group, 'Bas treo tường trái', [t + 20, d - 25, h - 90], [90, 12, 45], {thickness: 12, note: 'Bas treo/vít tường'})
-      panel(group, 'Bas treo tường phải', [w - t - 110, d - 25, h - 90], [90, 12, 45], {thickness: 12, note: 'Bas treo/vít tường'})
+      panel(group, 'Bas treo tÆ°á»ng trÃ¡i', [t + 20, d - t, h - 90], [90, t, 45], {thickness: t, note: 'Bas treo/vÃ­t tÆ°á»ng'})
+      panel(group, 'Bas treo tÆ°á»ng pháº£i', [w - t - 110, d - t, h - 90], [90, t, 45], {thickness: t, note: 'Bas treo/vÃ­t tÆ°á»ng'})
 
       if mod == 'dish_rack'
-        panel(group, 'Giá bát đĩa inox', [t + 40, 45, 120], [inner_w - 80, d - 90, 18], {thickness: 18, note: 'Giá bát đĩa cố định'})
-        panel(group, 'Khay hứng nước', [t + 40, 45, 70], [inner_w - 80, d - 90, 12], {thickness: 12, note: 'Khay hứng nước giá bát'})
+        panel(group, 'GiÃ¡ bÃ¡t Ä‘Ä©a inox', [t + 40, 45, 120], [inner_w - 80, d - 90, t], {thickness: t, note: 'GiÃ¡ bÃ¡t Ä‘Ä©a cá»‘ Ä‘á»‹nh'})
+        panel(group, 'Khay há»©ng nÆ°á»›c', [t + 40, 45, 70], [inner_w - 80, d - 90, t], {thickness: t, note: 'Khay há»©ng nÆ°á»›c giÃ¡ bÃ¡t'})
       end
 
       build_doors(group, p, w, h, d, 0, cl)
@@ -382,7 +387,7 @@ module CNCFMP
       requested_comps = (p['compartments']||2).to_i
       comps = auto_structural_compartments(w, t, requested_comps)
       drawers = (p['drawers'] || 0).to_i
-      sys32 = p['sys32'] == true
+      sys32 = false
       cl = []
       inner_w = w - 2*t
       inner_d = internal_depth(p, d)
@@ -395,23 +400,18 @@ module CNCFMP
       shelf_zone_z = body_z + drawer_h
       shelf_zone_h = body_h - drawer_h
       
-      panel(group, 'Hồi ngoài trái', [0, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm', note: 'Bao biên ngoài tủ'})
-      panel(group, 'Hồi ngoài phải', [w - t, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm', note: 'Bao biên ngoài tủ'})
-      cl << cut_entry('Hồi ngoài trái/phải', 2, h, d, t, 'Trước 1mm', 'Full cao, chịu lực tổng')
+      panel(group, 'Há»“i ngoÃ i trÃ¡i', [0, 0, 0], [t, d, h], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Bao biÃªn ngoÃ i tá»§'})
+      panel(group, 'Há»“i ngoÃ i pháº£i', [w - t, 0, 0], [t, d, h], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Bao biÃªn ngoÃ i tá»§'})
+      cl << cut_entry('Há»“i ngoÃ i trÃ¡i/pháº£i', 2, h, d, t, 'TrÆ°á»›c 1mm', 'Full cao, chá»‹u lá»±c tá»•ng')
       
       if sys32
         Hardware.add_system_32_holes(group.entities, [0, 0, body_z], [t, structural_d, body_h], enabled: true, direction: 1)
         Hardware.add_system_32_holes(group.entities, [w - t, 0, body_z], [t, structural_d, body_h], enabled: true, direction: -1)
       end
 
-      panel(group, 'Đáy tủ', [t, 0, kick], [inner_w, d, t], {thickness: t, edge: 'Trước 1mm', note: 'Lọt giữa hai hồi ngoài'})
-      panel(group, 'Nóc tủ', [t, 0, h - t], [inner_w, d, t], {thickness: t, edge: 'Trước 1mm', note: 'Lọt giữa hai hồi ngoài'})
-      cl << cut_entry('Đáy/Nóc', 2, inner_w, d, t, 'Trước 1mm', 'Lọt giữa hồi ngoài')
-      
-      panel(group, 'Chân âm trước', [t, 50, 0], [inner_w, t, kick], {thickness: t, edge: 'Trên 1mm'})
-      panel(group, 'Chân âm sau', [t, d - 70, 0], [inner_w, t, kick], {thickness: t})
-      cl << cut_entry('Chân âm', 2, inner_w, kick, t, 'Trên 1mm')
-      Hardware.add_adjustable_feet(group.entities, w, d, kick, t, enabled: true)
+      panel(group, 'ÄÃ¡y tá»§', [t, 0, kick], [inner_w, d, t], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Lá»t giá»¯a hai há»“i ngoÃ i'})
+      panel(group, 'NÃ³c tá»§', [t, 0, h - t], [inner_w, d, t], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Lá»t giá»¯a hai há»“i ngoÃ i'})
+      cl << cut_entry('ÄÃ¡y/NÃ³c', 2, inner_w, d, t, 'TrÆ°á»›c 1mm', 'Lá»t giá»¯a há»“i ngoÃ i')
       build_wardrobe_front_trim(group, w, h, d, kick, t, comps, comp_w, cl)
 
       build_back_panel(group, p, w, h, t, kick, cl)
@@ -419,28 +419,28 @@ module CNCFMP
       if comps > 1
         (comps - 1).times do |i|
           x = t + (i + 1)*comp_w + i*t
-          panel(group, "Hồi giữa #{i + 1}", [x, 0, body_z], [t, structural_d, body_h], {thickness: t, edge: 'Trước 1mm', note: 'Vách đứng chia khoang full cao'})
+          panel(group, "Há»“i giá»¯a #{i + 1}", [x, 0, body_z], [t, structural_d, body_h], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'VÃ¡ch Ä‘á»©ng chia khoang full cao'})
           if sys32
             Hardware.add_system_32_holes(group.entities, [x, 0, body_z], [t, structural_d, body_h], enabled: true, direction: 1)
             Hardware.add_system_32_holes(group.entities, [x, 0, body_z], [t, structural_d, body_h], enabled: true, direction: -1)
           end
         end
-        cl << cut_entry('Hồi giữa / vách đứng', comps - 1, body_h, structural_d, t, 'Trước 1mm', 'Full cao, chia khoang và chống võng')
+        cl << cut_entry('Há»“i giá»¯a / vÃ¡ch Ä‘á»©ng', comps - 1, body_h, structural_d, t, 'TrÆ°á»›c 1mm', 'Full cao, chia khoang vÃ  chá»‘ng vÃµng')
       end
 
       joint_x = [t]
       (comps - 1).times { |i| joint_x << (t + (i + 1)*comp_w + i*t) }
       joint_x << (w - t)
-      Hardware.add_wardrobe_joint_markers(group.entities, joint_x, structural_d, body_z, body_top, enabled: p['cams'] != false)
+      Hardware.add_wardrobe_joint_markers(group.entities, joint_x, structural_d, body_z, body_top, enabled: false)
 
       fixed_shelf_z = [h - 420.0, shelf_zone_z + 260.0].max
       fixed_shelf_z = body_top - 260.0 if fixed_shelf_z > body_top - 180.0
       if fixed_shelf_z > shelf_zone_z + 120.0
         comps.times do |c|
           x = t + c*(comp_w + t)
-          panel(group, "Đợt cố định khoang #{c + 1}", [x, 0, fixed_shelf_z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'Trước 1mm', note: 'Đợt cố định khóa khoang'})
+          panel(group, "Äá»£t cá»‘ Ä‘á»‹nh khoang #{c + 1}", [x, 0, fixed_shelf_z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Äá»£t cá»‘ Ä‘á»‹nh khÃ³a khoang'})
         end
-        cl << cut_entry('Đợt cố định tủ áo', comps, comp_w, inner_d - 20, t, 'Trước 1mm', 'Khóa khoang, tăng cứng')
+        cl << cut_entry('Äá»£t cá»‘ Ä‘á»‹nh tá»§ Ã¡o', comps, comp_w, inner_d - 20, t, 'TrÆ°á»›c 1mm', 'KhÃ³a khoang, tÄƒng cá»©ng')
       end
 
       mobile_shelves = [shelves - 1, 0].max
@@ -454,10 +454,10 @@ module CNCFMP
             x = t + c*(comp_w + t)
             max_shelves.times do |i|
               z = shelf_zone_z + step_h * (i + 1)
-              panel(group, "Đợt di động khoang #{c + 1}.#{i + 1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'Trước 1mm', note: 'Đợt di động trên lỗ System 32'})
+              panel(group, "Äá»£t di Ä‘á»™ng khoang #{c + 1}.#{i + 1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'TrÆ°á»›c 1mm', note: 'Äá»£t di Ä‘á»™ng trÃªn lá»— System 32'})
             end
           end
-          cl << cut_entry('Đợt di động tủ áo', comps * max_shelves, comp_w, inner_d - 20, t, 'Trước 1mm', 'Nhịp đợt không vượt 800mm')
+          cl << cut_entry('Äá»£t di Ä‘á»™ng tá»§ Ã¡o', comps * max_shelves, comp_w, inner_d - 20, t, 'TrÆ°á»›c 1mm', 'Nhá»‹p Ä‘á»£t khÃ´ng vÆ°á»£t 800mm')
         end
       end
 
@@ -466,14 +466,14 @@ module CNCFMP
       if rod_z > shelf_zone_z + 180.0 && comp_w > 120.0
         comps.times do |c|
           x = t + c*(comp_w + t) + 40.0
-          panel(group, "Suốt treo khoang #{c + 1}", [x, inner_d * 0.52, rod_z], [comp_w - 80.0, 25.0, 25.0], {thickness: 25, note: long_hanging ? 'Suốt treo áo dài 1400-1600mm' : 'Suốt treo áo ngắn 900-1100mm'})
+          panel(group, "Suá»‘t treo khoang #{c + 1}", [x, inner_d * 0.52, rod_z], [comp_w - 80.0, t, t], {thickness: t, note: long_hanging ? 'Suá»‘t treo Ã¡o dÃ i 1400-1600mm' : 'Suá»‘t treo Ã¡o ngáº¯n 900-1100mm'})
         end
       end
 
       if p['wardrobe_led'] == true && comp_w > 160.0
         comps.times do |c|
           x = t + c*(comp_w + t) + 40.0
-          panel(group, "LED cảm biến khoang #{c + 1}", [x, 18.0, body_top - 35.0], [comp_w - 80.0, 12.0, 12.0], {thickness: 12, note: 'LED cảm biến tủ áo'})
+          panel(group, "LED cáº£m biáº¿n khoang #{c + 1}", [x, t, body_top - 35.0], [comp_w - 80.0, t, t], {thickness: t, note: 'LED cáº£m biáº¿n tá»§ Ã¡o'})
         end
       end
 
@@ -498,31 +498,31 @@ module CNCFMP
       
       comp_w = (inner_w - (comps - 1)*t) / comps.to_f
       
-      # Vách chia
+      # VÃ¡ch chia
       if comps > 1
         (comps - 1).times do |i|
           x = t + (i + 1)*comp_w + i*t
-          panel(group, "Vách chia #{i+1}", [x, 0, base_z + t], [t, inner_d, inner_h], {thickness: t, edge: 'Trước 1mm'})
+          panel(group, "VÃ¡ch chia #{i+1}", [x, 0, base_z + t], [t, inner_d, inner_h], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
           if sys32
             Hardware.add_system_32_holes(group.entities, [x, 0, base_z + t], [t, inner_d, inner_h], enabled: true, direction: 1)
             Hardware.add_system_32_holes(group.entities, [x, 0, base_z + t], [t, inner_d, inner_h], enabled: true, direction: -1)
           end
         end
-        cl << cut_entry('Vách chia', comps - 1, inner_h, inner_d, t, 'Trước 1mm')
+        cl << cut_entry('VÃ¡ch chia', comps - 1, inner_h, inner_d, t, 'TrÆ°á»›c 1mm')
       end
 
-      # Đợt
+      # Äá»£t
       if shelves > 0
         step_h = inner_h / (shelves + 1).to_f
         comps.times do |c|
           x = t + c*(comp_w + t)
           shelves.times do |i|
             z = base_z + t + step_h * (i + 1)
-            # Rút ngắn đợt 20mm để thụt vào
-            panel(group, "Đợt khoang #{c+1} đợt #{i+1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'Trước 1mm'})
+            # RÃºt ngáº¯n Ä‘á»£t 20mm Ä‘á»ƒ thá»¥t vÃ o
+            panel(group, "Äá»£t khoang #{c+1} Ä‘á»£t #{i+1}", [x, 0, z], [comp_w, inner_d - 20, t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
           end
         end
-        cl << cut_entry('Đợt', comps * shelves, comp_w, inner_d - 20, t, 'Trước 1mm')
+        cl << cut_entry('Äá»£t', comps * shelves, comp_w, inner_d - 20, t, 'TrÆ°á»›c 1mm')
       end
     end
 
@@ -541,137 +541,136 @@ module CNCFMP
 
       cl = []
       
-      # Đầu giường (Phủ ra ngoài cùng)
-      panel(group, 'Đầu giường', [0, 0, 0], [w, t, head_h], {thickness: t, edge: 'Trên 1mm'})
-      cl << cut_entry('Đầu giường', 1, w, head_h, t, 'Trên 1mm')
+      # Äáº§u giÆ°á»ng (Phá»§ ra ngoÃ i cÃ¹ng)
+      panel(group, 'Äáº§u giÆ°á»ng', [0, 0, 0], [w, t, head_h], {thickness: t, edge: 'TrÃªn 1mm'})
+      cl << cut_entry('Äáº§u giÆ°á»ng', 1, w, head_h, t, 'TrÃªn 1mm')
 
       if btype == 'floating'
         base_h = 150.0
         inset_b = 150.0
-        # Bệ thụt
-        panel(group, 'Vai bệ trái', [inset_b, inset_b, 0], [t, d - inset_b*2, base_h], {thickness: t})
-        panel(group, 'Vai bệ phải', [w - inset_b - t, inset_b, 0], [t, d - inset_b*2, base_h], {thickness: t})
-        panel(group, 'Thang bệ trước', [inset_b + t, inset_b, 0], [w - inset_b*2 - 2*t, t, base_h], {thickness: t})
-        panel(group, 'Thang bệ sau', [inset_b + t, d - inset_b - t, 0], [w - inset_b*2 - 2*t, t, base_h], {thickness: t})
+        # Bá»‡ thá»¥t
+        panel(group, 'Vai bá»‡ trÃ¡i', [inset_b, inset_b, 0], [t, d - inset_b*2, base_h], {thickness: t})
+        panel(group, 'Vai bá»‡ pháº£i', [w - inset_b - t, inset_b, 0], [t, d - inset_b*2, base_h], {thickness: t})
+        panel(group, 'Thang bá»‡ trÆ°á»›c', [inset_b + t, inset_b, 0], [w - inset_b*2 - 2*t, t, base_h], {thickness: t})
+        panel(group, 'Thang bá»‡ sau', [inset_b + t, d - inset_b - t, 0], [w - inset_b*2 - 2*t, t, base_h], {thickness: t})
         
-        cl << cut_entry('Vai bệ', 2, d - inset_b*2, base_h, t, '')
-        cl << cut_entry('Thang bệ', 2, w - inset_b*2 - 2*t, base_h, t, '')
+        cl << cut_entry('Vai bá»‡', 2, d - inset_b*2, base_h, t, '')
+        cl << cut_entry('Thang bá»‡', 2, w - inset_b*2 - 2*t, base_h, t, '')
 
-        # Vai giường lơ lửng
-        panel(group, 'Vai giường trái',  [0, t, base_h], [t, d - t, side_h - base_h], {thickness: t, edge: 'Trên 1mm'})
-        panel(group, 'Vai giường phải',  [w - t, t, base_h], [t, d - t, side_h - base_h], {thickness: t, edge: 'Trên 1mm'})
-        # Đuôi giường lọt trong vai
-        panel(group, 'Đuôi giường', [t, d - t, base_h], [w - 2*t, t, side_h - base_h], {thickness: t, edge: 'Trên 1mm'})
+        # Vai giÆ°á»ng lÆ¡ lá»­ng
+        panel(group, 'Vai giÆ°á»ng trÃ¡i',  [0, t, base_h], [t, d - t, side_h - base_h], {thickness: t, edge: 'TrÃªn 1mm'})
+        panel(group, 'Vai giÆ°á»ng pháº£i',  [w - t, t, base_h], [t, d - t, side_h - base_h], {thickness: t, edge: 'TrÃªn 1mm'})
+        # ÄuÃ´i giÆ°á»ng lá»t trong vai
+        panel(group, 'ÄuÃ´i giÆ°á»ng', [t, d - t, base_h], [w - 2*t, t, side_h - base_h], {thickness: t, edge: 'TrÃªn 1mm'})
         
-        cl << cut_entry('Vai giường', 2, d - t, side_h - base_h, t, 'Trên 1mm')
-        cl << cut_entry('Đuôi giường', 1, w - 2*t, side_h - base_h, t, 'Trên 1mm')
+        cl << cut_entry('Vai giÆ°á»ng', 2, d - t, side_h - base_h, t, 'TrÃªn 1mm')
+        cl << cut_entry('ÄuÃ´i giÆ°á»ng', 1, w - 2*t, side_h - base_h, t, 'TrÃªn 1mm')
         
         grid_base_z = base_h
         grid_h = side_h - base_h - t
       else
-        # GIƯỜNG THƯỜNG / GIƯỜNG NGĂN KÉO
-        panel(group, 'Vai giường phải',  [w - t, t, 0], [t, d - t, side_h], {thickness: t, edge: 'Trên 1mm'})
-        cl << cut_entry('Vai giường', 1, d - t, side_h, t, 'Trên 1mm')
+        # GIÆ¯á»œNG THÆ¯á»œNG / GIÆ¯á»œNG NGÄ‚N KÃ‰O
+        panel(group, 'Vai giÆ°á»ng pháº£i',  [w - t, t, 0], [t, d - t, side_h], {thickness: t, edge: 'TrÃªn 1mm'})
+        cl << cut_entry('Vai giÆ°á»ng', 1, d - t, side_h, t, 'TrÃªn 1mm')
 
         if drawers > 0
-          # Vai trái là vai có ngăn kéo (vẽ ghép từ các đoạn để tạo lỗ, xuất cutlist là 1 tấm nguyên)
+          # Vai trÃ¡i lÃ  vai cÃ³ ngÄƒn kÃ©o (váº½ ghÃ©p tá»« cÃ¡c Ä‘oáº¡n Ä‘á»ƒ táº¡o lá»—, xuáº¥t cutlist lÃ  1 táº¥m nguyÃªn)
           dr_w = (d - t - top_m - bot_m - (drawers - 1) * mid_m) / drawers.to_f
           
-          # Vẽ các đoạn Bản để tạo hiệu ứng 3D có lỗ
-          panel(group, 'Bản đầu (Vai trái)', [0, t, 0], [t, top_m, side_h], {thickness: t})
-          panel(group, 'Bản cuối (Vai trái)', [0, d - bot_m, 0], [t, bot_m, side_h], {thickness: t})
+          # Váº½ cÃ¡c Ä‘oáº¡n Báº£n Ä‘á»ƒ táº¡o hiá»‡u á»©ng 3D cÃ³ lá»—
+          panel(group, 'Báº£n Ä‘áº§u (Vai trÃ¡i)', [0, t, 0], [t, top_m, side_h], {thickness: t})
+          panel(group, 'Báº£n cuá»‘i (Vai trÃ¡i)', [0, d - bot_m, 0], [t, bot_m, side_h], {thickness: t})
           if drawers > 1
             (drawers - 1).times do |i|
               y_mid = t + top_m + dr_w + i*(dr_w + mid_m)
-              panel(group, "Bản giữa #{i+1} (Vai trái)", [0, y_mid, 0], [t, mid_m, side_h], {thickness: t})
+              panel(group, "Báº£n giá»¯a #{i+1} (Vai trÃ¡i)", [0, y_mid, 0], [t, mid_m, side_h], {thickness: t})
             end
           end
-          # Nẹp trên/dưới lỗ
-          panel(group, 'Xà trên lỗ NK', [0, t + top_m, side_h - 40], [t, d - t - top_m - bot_m, 40], {thickness: t})
-          panel(group, 'Xà dưới lỗ NK', [0, t + top_m, 0], [t, d - t - top_m - bot_m, 40], {thickness: t})
+          # Náº¹p trÃªn/dÆ°á»›i lá»—
+          panel(group, 'XÃ  trÃªn lá»— NK', [0, t + top_m, side_h - 40], [t, d - t - top_m - bot_m, 40], {thickness: t})
+          panel(group, 'XÃ  dÆ°á»›i lá»— NK', [0, t + top_m, 0], [t, d - t - top_m - bot_m, 40], {thickness: t})
 
-          cl << cut_entry('Vai giường (khoét lổ NK)', 1, d - t, side_h, t, 'Khoét lổ CNC')
+          cl << cut_entry('Vai giÆ°á»ng (khoÃ©t lá»• NK)', 1, d - t, side_h, t, 'KhoÃ©t lá»• CNC')
         else
-          panel(group, 'Vai giường trái',  [0, t, 0], [t, d - t, side_h], {thickness: t, edge: 'Trên 1mm'})
-          cl << cut_entry('Vai giường', 1, d - t, side_h, t, 'Trên 1mm')
+          panel(group, 'Vai giÆ°á»ng trÃ¡i',  [0, t, 0], [t, d - t, side_h], {thickness: t, edge: 'TrÃªn 1mm'})
+          cl << cut_entry('Vai giÆ°á»ng', 1, d - t, side_h, t, 'TrÃªn 1mm')
         end
 
-        # Đuôi giường lọt trong vai
-        panel(group, 'Đuôi giường', [t, d - t, 0], [w - 2*t, t, side_h], {thickness: t, edge: 'Trên 1mm'})
-        cl << cut_entry('Đuôi giường', 1, w - 2*t, side_h, t, 'Trên 1mm')
+        # ÄuÃ´i giÆ°á»ng lá»t trong vai
+        panel(group, 'ÄuÃ´i giÆ°á»ng', [t, d - t, 0], [w - 2*t, t, side_h], {thickness: t, edge: 'TrÃªn 1mm'})
+        cl << cut_entry('ÄuÃ´i giÆ°á»ng', 1, w - 2*t, side_h, t, 'TrÃªn 1mm')
         
         grid_base_z = 0
         grid_h = side_h - t
       end
 
-      # KHUNG XƯƠNG
+      # KHUNG XÆ¯Æ NG
       inner_w = w - 2*t
       inner_d = d - 2*t
 
       if drawers > 0
-        # GIƯỜNG CÓ NGĂN KÉO
-        # Thang dọc ngăn kéo (Hậu của ngăn kéo)
+        # GIÆ¯á»œNG CÃ“ NGÄ‚N KÃ‰O
+        # Thang dá»c ngÄƒn kÃ©o (Háº­u cá»§a ngÄƒn kÃ©o)
         x_runner = t + runner
-        panel(group, 'Thang dọc đỡ NK', [x_runner, t, grid_base_z], [t, inner_d, grid_h], {thickness: t})
-        cl << cut_entry('Thang dọc đỡ NK', 1, inner_d, grid_h, t, '')
+        panel(group, 'Thang dá»c Ä‘á»¡ NK', [x_runner, t, grid_base_z], [t, inner_d, grid_h], {thickness: t})
+        cl << cut_entry('Thang dá»c Ä‘á»¡ NK', 1, inner_d, grid_h, t, '')
         
-        # Thang dọc còn lại (chia đều phần không gian trống bên phải)
+        # Thang dá»c cÃ²n láº¡i (chia Ä‘á»u pháº§n khÃ´ng gian trá»‘ng bÃªn pháº£i)
         rem_w = inner_w - runner - t
         x_mid = x_runner + t + rem_w/2.0
-        panel(group, 'Thang dọc xương', [x_mid, t, grid_base_z], [t, inner_d, grid_h], {thickness: t})
-        cl << cut_entry('Thang dọc xương', 1, inner_d, grid_h, t, '')
+        panel(group, 'Thang dá»c xÆ°Æ¡ng', [x_mid, t, grid_base_z], [t, inner_d, grid_h], {thickness: t})
+        cl << cut_entry('Thang dá»c xÆ°Æ¡ng', 1, inner_d, grid_h, t, '')
 
-        # Vách ngang chia NK
+        # VÃ¡ch ngang chia NK
         dr_w = (d - t - top_m - bot_m - (drawers - 1) * mid_m) / drawers.to_f
         y_pos = t + top_m
         drawers.times do |i|
-          # Tạo hộp ngăn kéo
-          build_drawer_box(group, "Hộc #{i+1}", [t, y_pos, grid_base_z], [runner, dr_w, grid_h - 20], t, cl)
-          # Mặt ngăn kéo (lọt vào trong lỗ)
-          panel(group, "Mặt NK #{i+1}", [t, y_pos + 2, grid_base_z + 42], [t, dr_w - 4, grid_h - 84], {thickness: t})
-          Hardware.add_pull_handle(group.entities, [t, y_pos + 2, grid_base_z + 42], [t, dr_w - 4, grid_h - 84], enabled: true, name: "Tay nắm NK giường #{i+1}", horizontal: false)
-          cl << cut_entry('Mặt ngăn kéo', 1, dr_w - 4, grid_h - 84, t, 'Bo 4 cạnh')
+          # Táº¡o há»™p ngÄƒn kÃ©o
+          build_drawer_box(group, "Há»™c #{i+1}", [t, y_pos, grid_base_z], [runner, dr_w, grid_h - 20], t, cl)
+          # Máº·t ngÄƒn kÃ©o (lá»t vÃ o trong lá»—)
+          panel(group, "Máº·t NK #{i+1}", [t, y_pos + 2, grid_base_z + 42], [t, dr_w - 4, grid_h - 84], {thickness: t})
+          cl << cut_entry('Máº·t ngÄƒn kÃ©o', 1, dr_w - 4, grid_h - 84, t, 'Bo 4 cáº¡nh')
 
-          # Vách ngang (Thang ngang) ôm 2 bên NK
-          panel(group, "Vách ngang NK #{i+1} trước", [t, y_pos - t, grid_base_z], [runner, t, grid_h], {thickness: t})
-          panel(group, "Vách ngang NK #{i+1} sau", [t, y_pos + dr_w, grid_base_z], [runner, t, grid_h], {thickness: t})
+          # VÃ¡ch ngang (Thang ngang) Ã´m 2 bÃªn NK
+          panel(group, "VÃ¡ch ngang NK #{i+1} trÆ°á»›c", [t, y_pos - t, grid_base_z], [runner, t, grid_h], {thickness: t})
+          panel(group, "VÃ¡ch ngang NK #{i+1} sau", [t, y_pos + dr_w, grid_base_z], [runner, t, grid_h], {thickness: t})
           
           y_pos += dr_w + mid_m
         end
-        cl << cut_entry('Vách ngang ngăn kéo', drawers * 2, runner, grid_h, t, '')
+        cl << cut_entry('VÃ¡ch ngang ngÄƒn kÃ©o', drawers * 2, runner, grid_h, t, '')
 
       else
-        # GIƯỜNG THƯỜNG ĐAN LƯỚI
+        # GIÆ¯á»œNG THÆ¯á»œNG ÄAN LÆ¯á»šI
         num_long = 2
-        num_lat = 2 # 2 hàng ngang tạo thành 3 khoang
+        num_lat = 2 # 2 hÃ ng ngang táº¡o thÃ nh 3 khoang
         
         comp_w = (inner_w - num_long*t) / (num_long + 1).to_f
         comp_d = (inner_d - num_lat*t) / (num_lat + 1).to_f
         
-        # Thang dọc (nguyên tấm)
+        # Thang dá»c (nguyÃªn táº¥m)
         num_long.times do |i|
           x = t + comp_w*(i+1) + t*i
-          panel(group, "Thang dọc xương #{i+1}", [x, t, grid_base_z], [t, inner_d, grid_h], {thickness: t})
+          panel(group, "Thang dá»c xÆ°Æ¡ng #{i+1}", [x, t, grid_base_z], [t, inner_d, grid_h], {thickness: t})
         end
-        cl << cut_entry('Thang dọc xương', num_long, inner_d, grid_h, t, '')
+        cl << cut_entry('Thang dá»c xÆ°Æ¡ng', num_long, inner_d, grid_h, t, '')
 
-        # Thang ngang (Cắt thành các đoạn nhỏ nhét giữa thang dọc)
+        # Thang ngang (Cáº¯t thÃ nh cÃ¡c Ä‘oáº¡n nhá» nhÃ©t giá»¯a thang dá»c)
         num_lat.times do |row|
           y = t + comp_d*(row+1) + t*row
           (num_long + 1).times do |col|
             x = t + comp_w*col + t*col
-            panel(group, "Thang ngang xương", [x, y, grid_base_z], [comp_w, t, grid_h], {thickness: t})
+            panel(group, "Thang ngang xÆ°Æ¡ng", [x, y, grid_base_z], [comp_w, t, grid_h], {thickness: t})
           end
         end
-        cl << cut_entry('Thang ngang xương', num_lat * (num_long + 1), comp_w, grid_h, t, '')
+        cl << cut_entry('Thang ngang xÆ°Æ¡ng', num_lat * (num_long + 1), comp_w, grid_h, t, '')
       end
 
-      # MẶT PHẢN GIƯỜNG (Chia 4 tấm dấu thập)
-      panel(group, 'Mặt phản Trái Trước', [t, t, side_h - t], [inner_w/2.0, inner_d/2.0, t], {thickness: t})
-      panel(group, 'Mặt phản Phải Trước', [t + inner_w/2.0, t, side_h - t], [inner_w/2.0, inner_d/2.0, t], {thickness: t})
-      panel(group, 'Mặt phản Trái Sau', [t, t + inner_d/2.0, side_h - t], [inner_w/2.0, inner_d/2.0, t], {thickness: t})
-      panel(group, 'Mặt phản Phải Sau', [t + inner_w/2.0, t + inner_d/2.0, side_h - t], [inner_w/2.0, inner_d/2.0, t], {thickness: t})
-      cl << cut_entry('Mặt phản', 4, inner_w/2.0, inner_d/2.0, t, 'Trải phủ gầm')
+      # Máº¶T PHáº¢N GIÆ¯á»œNG (Chia 4 táº¥m dáº¥u tháº­p)
+      panel(group, 'Máº·t pháº£n TrÃ¡i TrÆ°á»›c', [t, t, side_h - t], [inner_w/2.0, inner_d/2.0, t], {thickness: t})
+      panel(group, 'Máº·t pháº£n Pháº£i TrÆ°á»›c', [t + inner_w/2.0, t, side_h - t], [inner_w/2.0, inner_d/2.0, t], {thickness: t})
+      panel(group, 'Máº·t pháº£n TrÃ¡i Sau', [t, t + inner_d/2.0, side_h - t], [inner_w/2.0, inner_d/2.0, t], {thickness: t})
+      panel(group, 'Máº·t pháº£n Pháº£i Sau', [t + inner_w/2.0, t + inner_d/2.0, side_h - t], [inner_w/2.0, inner_d/2.0, t], {thickness: t})
+      cl << cut_entry('Máº·t pháº£n', 4, inner_w/2.0, inner_d/2.0, t, 'Tráº£i phá»§ gáº§m')
 
       cl
     end
@@ -680,13 +679,13 @@ module CNCFMP
       w = p['width'].to_f; h = p['height'].to_f; d = p['depth'].to_f
       t = (p['thickness']||17).to_f
       cl = []
-      panel(group, 'Mặt bàn', [0, 0, h - t], [w, d, t], {thickness: t, edge: 'Trước+trái+phải 1mm'})
-      cl << cut_entry('Mặt bàn', 1, w, d, t, 'Trước+trái+phải 1mm')
-      panel(group, 'Hồi trái', [0, 0, 0], [t, d, h - t], {thickness: t, edge: 'Trước 1mm'})
-      panel(group, 'Hồi phải', [w - t, 0, 0], [t, d, h - t], {thickness: t, edge: 'Trước 1mm'})
-      cl << cut_entry('Hồi trái/phải', 2, h - t, d, t, 'Trước 1mm')
-      panel(group, 'Giằng sau', [t, d - t, h - t - 200], [w - 2*t, t, 200], {thickness: t})
-      cl << cut_entry('Giằng sau', 1, w - 2*t, 200, t, '')
+      panel(group, 'Máº·t bÃ n', [0, 0, h - t], [w, d, t], {thickness: t, edge: 'TrÆ°á»›c+trÃ¡i+pháº£i 1mm'})
+      cl << cut_entry('Máº·t bÃ n', 1, w, d, t, 'TrÆ°á»›c+trÃ¡i+pháº£i 1mm')
+      panel(group, 'Há»“i trÃ¡i', [0, 0, 0], [t, d, h - t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
+      panel(group, 'Há»“i pháº£i', [w - t, 0, 0], [t, d, h - t], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
+      cl << cut_entry('Há»“i trÃ¡i/pháº£i', 2, h - t, d, t, 'TrÆ°á»›c 1mm')
+      panel(group, 'Giáº±ng sau', [t, d - t, h - t - 200], [w - 2*t, t, 200], {thickness: t})
+      cl << cut_entry('Giáº±ng sau', 1, w - 2*t, 200, t, '')
       cl
     end
 
@@ -698,21 +697,21 @@ module CNCFMP
       box_d = d - 20 
       box_h = h - 40 
 
-      # Hồi hộc kéo
-      panel(group, "#{name} Hồi trái", [origin[0] + slide_gap, origin[1] + 10, origin[2] + 20], [t, box_d, box_h], {thickness: t, edge: 'Trên 1mm'})
-      panel(group, "#{name} Hồi phải", [origin[0] + w - slide_gap - t, origin[1] + 10, origin[2] + 20], [t, box_d, box_h], {thickness: t, edge: 'Trên 1mm'})
-      cl << cut_entry("#{name} Hồi", 2, box_d, box_h, t, 'Trên 1mm')
+      # Há»“i há»™c kÃ©o
+      panel(group, "#{name} Há»“i trÃ¡i", [origin[0] + slide_gap, origin[1] + 10, origin[2] + 20], [t, box_d, box_h], {thickness: t, edge: 'TrÃªn 1mm'})
+      panel(group, "#{name} Há»“i pháº£i", [origin[0] + w - slide_gap - t, origin[1] + 10, origin[2] + 20], [t, box_d, box_h], {thickness: t, edge: 'TrÃªn 1mm'})
+      cl << cut_entry("#{name} Há»“i", 2, box_d, box_h, t, 'TrÃªn 1mm')
 
-      # Trán hộc / Lưng hộc
+      # TrÃ¡n há»™c / LÆ°ng há»™c
       front_back_w = box_w - 2*t
-      panel(group, "#{name} Trán", [origin[0] + slide_gap + t, origin[1] + 10, origin[2] + 20], [front_back_w, t, box_h], {thickness: t, edge: 'Trên 1mm'})
-      panel(group, "#{name} Lưng", [origin[0] + slide_gap + t, origin[1] + 10 + box_d - t, origin[2] + 20], [front_back_w, t, box_h], {thickness: t, edge: 'Trên 1mm'})
-      cl << cut_entry("#{name} Trán/Lưng", 2, front_back_w, box_h, t, 'Trên 1mm')
+      panel(group, "#{name} TrÃ¡n", [origin[0] + slide_gap + t, origin[1] + 10, origin[2] + 20], [front_back_w, t, box_h], {thickness: t, edge: 'TrÃªn 1mm'})
+      panel(group, "#{name} LÆ°ng", [origin[0] + slide_gap + t, origin[1] + 10 + box_d - t, origin[2] + 20], [front_back_w, t, box_h], {thickness: t, edge: 'TrÃªn 1mm'})
+      cl << cut_entry("#{name} TrÃ¡n/LÆ°ng", 2, front_back_w, box_h, t, 'TrÃªn 1mm')
 
-      # Đáy hộc lọt gầm
-      db_t = 5.0
-      panel(group, "#{name} Đáy", [origin[0] + slide_gap + t, origin[1] + 10 + t, origin[2] + 20], [front_back_w, box_d - 2*t, db_t], {thickness: db_t})
-      cl << cut_entry("#{name} Đáy", 1, front_back_w, box_d - 2*t, db_t, '')
+      # ÄÃ¡y há»™c lá»t gáº§m
+      db_t = t
+      panel(group, "#{name} ÄÃ¡y", [origin[0] + slide_gap + t, origin[1] + 10 + t, origin[2] + 20], [front_back_w, box_d - 2*t, db_t], {thickness: db_t})
+      cl << cut_entry("#{name} ÄÃ¡y", 1, front_back_w, box_d - 2*t, db_t, '')
       Hardware.add_drawer_slides(group.entities, origin, size, enabled: true)
     end
 
@@ -721,13 +720,13 @@ module CNCFMP
       t = (p['thickness']||17).to_f
       drawers = (p['drawers']||2).to_i
       cl = []
-      panel(group, 'Hồi trái', [0, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm'})
-      panel(group, 'Hồi phải', [w - t, 0, 0], [t, d, h], {thickness: t, edge: 'Trước 1mm'})
-      cl << cut_entry('Hồi trái/phải', 2, h, d, t, 'Trước 1mm')
-      panel(group, 'Đáy', [t, 0, 0], [w - 2*t, d, t], {thickness: t})
-      panel(group, 'Nóc', [t, 0, h - t], [w - 2*t, d, t], {thickness: t, edge: 'Trước+trái+phải 1mm'})
-      cl << cut_entry('Đáy', 1, w - 2*t, d, t, '')
-      cl << cut_entry('Nóc', 1, w - 2*t, d, t, 'Trước+trái+phải 1mm')
+      panel(group, 'Há»“i trÃ¡i', [0, 0, 0], [t, d, h], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
+      panel(group, 'Há»“i pháº£i', [w - t, 0, 0], [t, d, h], {thickness: t, edge: 'TrÆ°á»›c 1mm'})
+      cl << cut_entry('Há»“i trÃ¡i/pháº£i', 2, h, d, t, 'TrÆ°á»›c 1mm')
+      panel(group, 'ÄÃ¡y', [t, 0, 0], [w - 2*t, d, t], {thickness: t})
+      panel(group, 'NÃ³c', [t, 0, h - t], [w - 2*t, d, t], {thickness: t, edge: 'TrÆ°á»›c+trÃ¡i+pháº£i 1mm'})
+      cl << cut_entry('ÄÃ¡y', 1, w - 2*t, d, t, '')
+      cl << cut_entry('NÃ³c', 1, w - 2*t, d, t, 'TrÆ°á»›c+trÃ¡i+pháº£i 1mm')
       
       build_back_panel(group, p, w, h, t, 0, cl)
 
@@ -736,13 +735,12 @@ module CNCFMP
         face_h = (inner_h / drawers.to_f) - 3
         drawers.times do |i|
           z = t + i * (face_h + 3)
-          # Mặt hộc kéo
-          panel(group, "Mặt hộc kéo #{i+1}", [3, -18, z], [w - 6, 18, face_h], {thickness: 18, edge: 'Bo 4 cạnh 1mm'})
-          Hardware.add_pull_handle(group.entities, [3, -18, z], [w - 6, 18, face_h], enabled: true, name: "Tay nắm hộc #{i+1}", horizontal: true)
-          # Cấu tạo hộc kéo bên trong
-          build_drawer_box(group, "Hộc #{i+1}", [t, 0, z], [w - 2*t, d, face_h], t, cl)
+          # Máº·t há»™c kÃ©o
+          panel(group, "Máº·t há»™c kÃ©o #{i+1}", [3, -t, z], [w - 6, t, face_h], {thickness: t, edge: 'Bo 4 cáº¡nh 1mm'})
+          # Cáº¥u táº¡o há»™c kÃ©o bÃªn trong
+          build_drawer_box(group, "Há»™c #{i+1}", [t, 0, z], [w - 2*t, d, face_h], t, cl)
         end
-        cl << cut_entry('Mặt hộc kéo', drawers, w - 6, face_h, 18, 'Bo 4 cạnh 1mm')
+        cl << cut_entry('Máº·t há»™c kÃ©o', drawers, w - 6, face_h, t, 'Bo 4 cáº¡nh 1mm')
       end
       cl
     end
@@ -771,39 +769,34 @@ module CNCFMP
       elsif dtype == 'sliding'
         inner_w = w - 2*t
         inner_h = h - 2*t
+        rail_d = t
         overlap = doors > 1 ? 30.0 : 0.0
-        door_w = (inner_w + overlap) / doors.to_f
-        door_h = inner_h - 10 # Trừ rãnh ray trượt
-        door_y = 5
-        door_z = base_z + t + 5
+        door_w = (inner_w + overlap * [doors - 1, 0].max) / doors.to_f
+        door_h = inner_h - 2*rail_d - gap
+        door_y = -t
+        door_z = base_z + t + rail_d
         base_x = t
         
-        # Ray trượt nhôm
-        panel(group, 'Ray nhôm trên', [t, 0, base_z + t + inner_h - 10], [inner_w, 60, 10], {thickness: 10})
-        panel(group, 'Ray nhôm dưới', [t, 0, base_z + t], [inner_w, 60, 10], {thickness: 10})
-        cl << cut_entry('Ray lùa', 2, inner_w, 60, 10, '')
+        # Ray trÆ°á»£t nhÃ´m
+        panel(group, 'Ray lÃ¹a trÃªn', [t, -t, base_z + h - t - rail_d], [inner_w, t, rail_d], {thickness: t})
+        panel(group, 'Ray lÃ¹a dÆ°á»›i', [t, -t, base_z + t], [inner_w, t, rail_d], {thickness: t})
+        cl << cut_entry('Ray lÃ¹a', 2, inner_w, t, t, '')
       end
 
       doors.times do |i|
         if dtype == 'sliding'
-          x = base_x + (doors > 1 ? i * (door_w - overlap / (doors - 1).to_f) : 0)
-          y = i % 2 == 0 ? door_y + 35 : door_y + 5
+          x = base_x + (doors > 1 ? i * (door_w - overlap) : 0)
+          y = i % 2 == 0 ? door_y : door_y - t - gap
         else
           x = base_x + i * (door_w + gap)
           y = door_y
         end
 
-        name = doors == 1 ? 'Cánh' : (i == 0 ? 'Cánh trái' : (i == doors - 1 ? 'Cánh phải' : "Cánh #{i+1}"))
-        inst = panel(group, name, [x, y, door_z], [door_w, t, door_h], {thickness: t, edge: 'Bo 4 cạnh 1mm'})
-        Hardware.add_pull_handle(group.entities, [x, y, door_z], [door_w, t, door_h], enabled: true, name: "Tay nắm #{name}", horizontal: false)
+        name = doors == 1 ? 'CÃ¡nh' : (i == 0 ? 'CÃ¡nh trÃ¡i' : (i == doors - 1 ? 'CÃ¡nh pháº£i' : "CÃ¡nh #{i+1}"))
+        inst = panel(group, name, [x, y, door_z], [door_w, t, door_h], {thickness: t, edge: 'Bo 4 cáº¡nh 1mm'})
         
-        if p['hinges'] && dtype != 'sliding'
-          Hardware.add_hinge_cup_markers(
-            group.entities, [x, y, door_z], [door_w, t, door_h], enabled: true
-          )
-        end
       end
-      cl << cut_entry('Cánh', doors, door_h, door_w, t, 'Bo 4 cạnh 1mm')
+      cl << cut_entry('CÃ¡nh', doors, door_h, door_w, t, 'Bo 4 cáº¡nh 1mm')
     end
   end
 end
