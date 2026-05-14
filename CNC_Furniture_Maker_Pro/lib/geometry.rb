@@ -13,7 +13,7 @@ module CNCFMP
       z = Utils.mm(size_mm[2])
       pts = [[0,0,0],[x,0,0],[x,y,0],[0,y,0]]
       face = ents.add_face(pts)
-      face.reverse! if face.normal.z > 0
+      face.reverse! if face.normal.z < 0
       face.pushpull(z)
       ox = Utils.mm(origin_mm[0])
       oy = Utils.mm(origin_mm[1])

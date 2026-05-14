@@ -41,8 +41,18 @@ module CNCFMP
       end
     end
 
-    def self.download_and_install(url)
-      UI.messagebox("Đang tiến hành tải xuống bản cập nhật. Vui lòng chờ...")
+    def self.download_and_install(url, redirects = 0)
+      if url.nil? || url.to_s.strip.empty?
+        UI.messagebox('Link tải cập nhật đang trống. Hãy kiểm tra lại version.json trên GitHub.')
+        return
+      end
+
+      if redirects > 5
+        UI.messagebox('Tải xuống thất bại: link cập nhật redirect quá nhiều lần.')
+        return
+      end
+
+      UI.messagebox("Bắt đầu tải bản cập nhật.\nNếu GitHub báo lỗi, plugin sẽ hiện thông báo chi tiết.")
       
       request = Sketchup::Http::Request.new(url, Sketchup::Http::GET)
       
@@ -50,11 +60,17 @@ module CNCFMP
       request.start do |req, res|
         if res.status_code == 200
           begin
+            body = res.body
+            if body.nil? || body.bytesize < 100 || body.byteslice(0, 2) != 'PK'
+              UI.messagebox("Tải xuống không phải file RBZ hợp lệ.\n\nURL: #{url}\nDung lượng: #{body ? body.bytesize : 0} bytes\n\nHãy kiểm tra link trong version.json phải trỏ trực tiếp tới file .rbz raw.")
+              next
+            end
+
             tmp_dir = Dir.tmpdir
             file_path = File.join(tmp_dir, "CNC_Furniture_Maker_Pro_update.rbz")
             
             File.open(file_path, 'wb') do |f|
-              f.write(res.body)
+              f.write(body)
             end
             
             # Cài đặt file rbz
@@ -67,16 +83,22 @@ module CNCFMP
           rescue => e
             UI.messagebox("Lỗi trong quá trình lưu hoặc cài đặt: #{e.message}")
           end
-        elsif res.status_code == 301 || res.status_code == 302
+        elsif [301, 302, 303, 307, 308].include?(res.status_code)
             # Handle redirect
-            redirect_url = res.headers["Location"]
+            redirect_url = res.headers['Location'] || res.headers['location']
             if redirect_url
-               download_and_install(redirect_url)
+               if redirect_url.start_with?('/')
+                 uri = URI.parse(url)
+                 redirect_url = "#{uri.scheme}://#{uri.host}#{redirect_url}"
+               end
+               download_and_install(redirect_url, redirects + 1)
             else
                UI.messagebox("Lỗi redirect nhưng không tìm thấy link.")
             end
+        elsif res.status_code == 404
+          UI.messagebox("Không tìm thấy file cập nhật trên GitHub (404).\n\nURL đang dùng:\n#{url}\n\nHãy upload CNC_Furniture_Maker_Pro.rbz lên đúng đường dẫn hoặc sửa version.json.")
         else
-          UI.messagebox("Tải xuống thất bại. Mã lỗi: #{res.status_code}")
+          UI.messagebox("Tải xuống thất bại. Mã lỗi: #{res.status_code}\nURL: #{url}")
         end
       end
     end

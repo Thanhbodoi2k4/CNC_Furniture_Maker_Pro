@@ -83,8 +83,15 @@
     <label>Module tủ bếp</label>
     <select id="kitchen_module">
       <option value="standard">Tiêu chuẩn</option>
+      <option value="sink">Khoang chậu rửa</option>
+      <option value="cooktop">Khoang bếp từ/gas</option>
+      <option value="oven">Khoang lò nướng</option>
+      <option value="drawer">Khoang ngăn kéo</option>
       <option value="dishwasher">Máy rửa bát</option>
       <option value="extractor">Máy hút mùi</option>
+      <option value="dish_rack">Giá bát đĩa</option>
+      <option value="corner_dead">Góc L chết</option>
+      <option value="corner_45">Góc L xéo 45°</option>
     </select>
   </div>
   <div class="row" id="row_bed_type" class="hidden">
@@ -99,6 +106,8 @@
   <div class="row"><label>Có cam chốt</label><input id="cams" type="checkbox" checked></div>
   <div class="row"><label>Lỗ tăng đợt 32mm</label><input id="sys32" type="checkbox" checked></div>
   <div class="row"><label>Bo cạnh</label><input id="edge_banding" type="checkbox" checked></div>
+  <div class="row" id="row_wardrobe_led"><label>LED cảm biến tủ áo</label><input id="wardrobe_led" type="checkbox"></div>
+  <div class="row" id="row_wardrobe_open"><label>Mở cánh xem kết cấu</label><input id="wardrobe_open_view" type="checkbox" checked></div>
 </fieldset>
 
 <fieldset id="fs_bed"><legend>Cấu hình Giường</legend>
@@ -138,6 +147,8 @@ function updateUI() {
   show('row_door_type', isCab);
   show('row_kitchen_module', isKit);
   show('row_bed_type', isBed);
+  show('row_wardrobe_led', t === 'wardrobe');
+  show('row_wardrobe_open', t === 'wardrobe');
 
   show('row_doors', isCab && t !== 'bedside');
   show('row_door_gap', isCab);
@@ -195,6 +206,8 @@ function getParams(){
     cams:id('cams') ? id('cams').checked : false,
     sys32:id('sys32') ? id('sys32').checked : false,
     edge_banding:id('edge_banding') ? id('edge_banding').checked : false,
+    wardrobe_led:id('wardrobe_led') ? id('wardrobe_led').checked : false,
+    wardrobe_open_view:id('wardrobe_open_view') ? id('wardrobe_open_view').checked : false,
     bed_side_h:parseFloat(id('bed_side_h') ? id('bed_side_h').value : 350),
     bed_drawers:parseInt(id('bed_drawers') ? id('bed_drawers').value : 2),
     bed_top_margin:parseFloat(id('bed_top_margin') ? id('bed_top_margin').value : 400),
